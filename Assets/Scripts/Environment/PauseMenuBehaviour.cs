@@ -1,15 +1,24 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PauseMenuBehaviour : MonoBehaviour
 {
-    void Start()
+    public void BackToGame()
     {
-        
+        SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
     }
-
-    // Update is called once per frame
-    void Update()
+    public void GameOptions()
     {
-        
+        SceneManager.LoadScene("OptionMenu", LoadSceneMode.Single);
+    }
+    public void LoadGame()
+    {
+        //get game variables
+        Debug.Log("Load Game");
+    }
+    public void SaveGame()
+    {
+        //set game variables
+        Debug.Log("Save Game");
     }
 }

@@ -1,25 +1,25 @@
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Mob : MonoBehaviour
+public class Mob : ScriptableObject
 {
-    //[SerializeField] protected string name;
-    [SerializeField] protected int level = 0;
-    [SerializeField] protected int xp = 0;
-    [SerializeField] protected float timer = 0f;
-    [SerializeField] public Vector3 dest;
+    protected int level = 0;
+    protected int experience = 0;
+    protected int hitpoints = 0;
+    protected float attack = 0f; // set base to each
+    protected float attackspeed = 0f;
+    protected float movementspeed = 0f;
+    protected bool isHunter = false;
+    [SerializeField] public Vector2 position;
+    [SerializeField] public Vector2 destination;
     [SerializeField] public Quaternion rotation;
     protected int Level { get => level; set => level = value; }
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    protected int XP { get => experience; set => experience = value; }
+    protected int HP { get => hitpoints; set => hitpoints = value; }
+    protected bool IsHunter { get => isHunter; set => isHunter = value; }
+    protected void IncreaseLevel()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        int newLevel = this.experience * this.level;
+        this.level = newLevel;
+        this.attack *= this.level / 10.0f;
     }
 }

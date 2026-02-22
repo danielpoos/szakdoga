@@ -1,15 +1,22 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CreateMenuBehaviour : MonoBehaviour
 {
-    void Start()
+    public void CreateNewGame()
     {
-        
+        SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+        //create gamesettings
+        //set variables
     }
-
-    // Update is called once per frame
-    void Update()
+    public void BackToMainMenu()
     {
-        
+        SceneManager.LoadScene("MainMenu", LoadSceneMode.Single);
+    }
+    public void LoadGame()
+    {
+        SceneManager.LoadScene("LoadGame", LoadSceneMode.Single);
+        //enable to set variables to load a game
+        Debug.Log("Load Game");
     }
 }

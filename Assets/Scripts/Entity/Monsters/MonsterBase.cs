@@ -2,15 +2,17 @@ using UnityEngine;
 
 public class MonsterBase : Mob
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    protected ItemBase itemDrop;
+    public ItemBase ItemDrop { get; }
+    private void Awake()
     {
         
     }
-
-    // Update is called once per frame
-    void Update()
+    //give exp, item drop to player
+    public virtual ItemBase OnDeath() { return itemDrop; }
+    public virtual int Calculate_Experience()
     {
-        
+        //experience = level * difficulty * tipus * hp
+        return experience;
     }
 }

@@ -2,15 +2,10 @@ using UnityEngine;
 
 public class HunterBase : Mob
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    protected ItemBase weapon;
+    public ItemBase Weapon { get; }
+    private void Awake()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        isHunter = true;
     }
 }
