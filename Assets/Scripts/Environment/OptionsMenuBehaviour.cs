@@ -3,8 +3,14 @@ using UnityEngine.SceneManagement;
 
 public class OptionsMenu : MonoBehaviour
 {
-    public void BackToMainMenu()
+    [SerializeField] private GameSetting gameSetting;
+    [SerializeField] private Options options;
+    private void Awake()
     {
-        SceneManager.LoadScene("MainMenu", LoadSceneMode.Single);
+        gameSetting.options = options;
+    }
+    public void BackToPreviousScene()
+    {
+        SceneManager.LoadScene(gameSetting.PreviousScene, LoadSceneMode.Single);
     }
 }

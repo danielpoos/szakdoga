@@ -1,23 +1,13 @@
 using UnityEngine;
 
-public class FileMethods : MonoBehaviour
+public class FileMethods
 {
-    private string fileName;
-    private Player player;
-    private GameSetting gs;
-
-    public FileMethods(string fileName, Player player, GameSetting gs)
+    public static bool LoadGame(string fileName)
     {
-        this.fileName = fileName;
-        this.player = player;
-        this.gs = gs;
-    }
-
-    public bool LoadGame()
-    {
+        GameSetting gameSetting = new();
         return false;
     }
-    public bool SaveGame()
+    public static bool SaveGame(string fileName, GameSetting gameSetting)
     {
         return false;
     }
