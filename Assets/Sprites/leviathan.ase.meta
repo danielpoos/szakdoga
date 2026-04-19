@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f984fb76c6d8e1449a4de15206afda2b
+guid: c49e8c584f0f81b40a6d7a055fe05a84
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -98,7 +98,7 @@ ScriptedImporter:
     addSortingGroup: 1
     addShadowCasters: 0
   importFileNodeState: 1
-  platformSettingsDirtyTick: 639121128113983361
+  platformSettingsDirtyTick: 639122283576167197
   textureAssetName: 
   singleSpriteImportData:
   - name: 
@@ -123,9 +123,9 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 0, y: 0}
   animatedSpriteImportData:
-  - name: Castiel-sprite
+  - name: leviathan
     originalName: 
-    pivot: {x: 0.5090909, y: 0}
+    pivot: {x: 0.5050505, y: 0}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     customData: 
@@ -133,9 +133,9 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 55
-      height: 128
-    spriteID: 36575f8a17b2f5a43813246807941052
+      width: 99
+      height: 126
+    spriteID: 57be3d3b7b1d71744a74f73fb93032fd
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -148,25 +148,25 @@ ScriptedImporter:
   asepriteLayers:
   - layerIndex: 0
     uuid:
-      value0: 1968344793
+      value0: 1288047044
       value1: 0
       value2: 0
       value3: 0
     guid: 0
-    name: Castiel-sprite
+    name: leviathan
     layerFlags: 0
     layerType: 0
     blendMode: 0
     cells:
-    - name: Castiel-sprite
+    - name: leviathan
       frameIndex: 0
       additiveSortOrder: 0
       cellRect:
-        x: 36
+        x: 14
         y: 0
-        width: 55
-        height: 128
-      spriteId: 36575f8a17b2f5a43813246807941052
+        width: 99
+        height: 126
+      spriteId: 57be3d3b7b1d71744a74f73fb93032fd
     linkedCells: []
     parentIndex: -1
   platformSettings:

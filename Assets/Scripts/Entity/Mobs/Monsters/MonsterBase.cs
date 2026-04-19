@@ -1,14 +1,28 @@
+using UnityEngine;
+
 public class MonsterBase : Mob
 {
-    protected ItemBase itemDrop;
-    public ItemBase ItemDrop { get; }
-    private void Awake()
+    protected Item itemDrop;
+    public Vector2 destination = new(0, 0);
+    public Item ItemDrop { get; }
+    public MonsterBase()
     {
-        
+        level = 1;
+        experience = 20;
+        maxHitPoints = 200;
+        hitPoints = 200;
+        attack = 10;
+        attackSpeed = 3f;
+        movementSpeed = 50f;
     }
-    public void MoveToPlayerPos()
+    public void LevelUpMonster(int level)
     {
-
+        for (int i = 0; i < level; i++)
+        {
+            experience += level * 2;
+            maxHitPoints = hitPoints *= level+1;
+            attack *= (int)(level * .2f);
+        }
     }
     public void CollideWithPlayer()
     {
@@ -19,10 +33,5 @@ public class MonsterBase : Mob
 
     }
     //give exp, item drop to player
-    public virtual ItemBase OnDeath() { return itemDrop; }
-    public int Calculate_Experience(int round)
-    {
-        experience = level * (hitPoints + (int)attack);
-        return experience / round;
-    }
+    public virtual Item OnDeath() { return itemDrop; }
 }

@@ -5,22 +5,21 @@ public enum ItemType
     // items
     AmmoBundle,
     Bandage,
-    Burger,
     Beer,
+    Burger,
     Cocktail,
+    MagicCircle,
     Pie,
     Potion,
     Salad,
     Shield,
     Whiskey,
+    WipeEnemies,
     // powerups
     Attack,
     AttackSpeed,
-    HitPoint,
-    MagicCircle,
     MovementSpeed,
     WeaponLevel,
-    WipeEnemies,
     // weapons
     AngelBlessing,
     Book,
@@ -31,41 +30,49 @@ public enum ItemType
 }
 public class Item
 {
-    private ItemType itemType;
-    private Sprite sprite;
-
+    protected ItemType itemType;
+    protected Sprite sprite;
+    protected int quantity;
+    protected int quality;
+    public Item(ItemType itemType, int quality = 1, int quantity = 1)
+    {
+        this.itemType = itemType;
+        this.quality = quality;
+        this.quantity = quantity;
+    }
     public ItemType ItemType { get => itemType; set => itemType = value; }
     public Sprite Sprite { get => sprite; set => sprite = value; }
+    public int Quantity { get => quantity; set => quantity = value; }
+    public int Quality { get => quality; set => quality = value; }
     public Sprite GetSprite()
     {
-        switch (ItemType)
+        return ItemType switch
         {
-            case ItemType.AmmoBundle: return ItemAssets.Instance.AmmoBundle;
-            case ItemType.Bandage: return ItemAssets.Instance.Bandage;
-            case ItemType.Beer: return ItemAssets.Instance.Beer;
-            case ItemType.Burger: return ItemAssets.Instance.Burger;
-            case ItemType.Cocktail: return ItemAssets.Instance.Cocktail;
-            case ItemType.Pie: return ItemAssets.Instance.Pie;
-            case ItemType.Potion: return ItemAssets.Instance.Potion;
-            case ItemType.Salad: return ItemAssets.Instance.Salad;
-            case ItemType.Shield: return ItemAssets.Instance.Shield;
-            case ItemType.Whiskey: return ItemAssets.Instance.Whiskey;
+            ItemType.AmmoBundle => ItemAssets.Instance.AmmoBundle,
+            ItemType.Bandage => ItemAssets.Instance.Bandage,
+            ItemType.Beer => ItemAssets.Instance.Beer,
+            ItemType.Burger => ItemAssets.Instance.Burger,
+            ItemType.Cocktail => ItemAssets.Instance.Cocktail,
+            ItemType.MagicCircle => ItemAssets.Instance.MagicCircle,
+            ItemType.Pie => ItemAssets.Instance.Pie,
+            ItemType.Potion => ItemAssets.Instance.Potion,
+            ItemType.Salad => ItemAssets.Instance.Salad,
+            ItemType.Shield => ItemAssets.Instance.Shield,
+            ItemType.Whiskey => ItemAssets.Instance.Whiskey,
+            ItemType.WipeEnemies => ItemAssets.Instance.WipeEnemies,
 
-            case ItemType.Attack: return ItemAssets.Instance.Attack;
-            case ItemType.AttackSpeed: return ItemAssets.Instance.AttackSpeed;
-            case ItemType.HitPoint: return ItemAssets.Instance.HitPoint;
-            case ItemType.MagicCircle: return ItemAssets.Instance.MagicCircle;
-            case ItemType.MovementSpeed: return ItemAssets.Instance.MovementSpeed;
-            case ItemType.WeaponLevel: return ItemAssets.Instance.WeaponLevel;
-            case ItemType.WipeEnemies: return ItemAssets.Instance.WipeEnemies;
-            
-            case ItemType.AngelBlessing: return ItemAssets.Instance.AngelBlessing;
-            case ItemType.Book: return ItemAssets.Instance.Book;
-            case ItemType.Flamethrower: return ItemAssets.Instance.Flamethrower;
-            case ItemType.Machete: return ItemAssets.Instance.Machete;
-            case ItemType.Pistol: return ItemAssets.Instance.Pistol;
-            case ItemType.Shotgun: return ItemAssets.Instance.Shotgun;
-            default: return ItemAssets.Instance.Shield;
+            ItemType.Attack => ItemAssets.Instance.Attack,
+            ItemType.AttackSpeed => ItemAssets.Instance.AttackSpeed,
+            ItemType.MovementSpeed => ItemAssets.Instance.MovementSpeed,
+            ItemType.WeaponLevel => ItemAssets.Instance.WeaponLevel,
+
+            ItemType.AngelBlessing => ItemAssets.Instance.AngelBlessing,
+            ItemType.Book => ItemAssets.Instance.Book,
+            ItemType.Flamethrower => ItemAssets.Instance.Flamethrower,
+            ItemType.Machete => ItemAssets.Instance.Machete,
+            ItemType.Pistol => ItemAssets.Instance.Pistol,
+            ItemType.Shotgun => ItemAssets.Instance.Shotgun,
+            _ => ItemAssets.Instance.Shield,
         };
     }
 }

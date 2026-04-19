@@ -5,36 +5,47 @@ using UnityEngine;
 public class Mob : ScriptableObject
 {
     protected Sprite sprite;
-    protected int level = 0;
-    protected int experience = 0;
+    protected int level = 1;
+    protected int experience = 0; // hunter => get, monsters => give
+    protected int maxHitPoints = 0;
     protected int hitPoints = 0;
-    protected float attack = 0f; // set base to each
+    protected int attack = 0;
     protected float attackSpeed = 0f;
-    private float movementSpeed = 50f;
+    protected float movementSpeed = 100f;
     protected bool isHunter = false;
-    public Vector2 position = new Vector2(0,0);
-    public Vector2 destination = new Vector2(0,0);
-    public bool rotation = true; //left or right
+    protected bool isGameOver = false;
+    protected bool isDead = false;
+    public Vector2 position = new(0, 0);
+    public bool rotation = false; //left or right
 
     public Sprite Sprite { get => sprite; set => sprite = value; }
-    protected int Level { get => level; set => level = value; }
-    protected int XP { get => experience; set => experience = value; }
-    protected int HP { get => hitPoints; set => hitPoints = value; }
-    protected bool IsHunter { get => isHunter; set => isHunter = value; }
+    public int Level { get => level; set => level = value; }
+    public int XP { get => experience; set => experience = value; }
+    public int MaxHP { get => maxHitPoints; set => maxHitPoints = value; }
+    public int HP { get => hitPoints; set => hitPoints = value; }
+    public int Attack { get => attack; set => attack = value; }
+    public float AttackSpeed { get => attackSpeed; set => attackSpeed = value; }
     public float MovementSpeed { get => movementSpeed; set => movementSpeed = value; }
+    public bool IsGameOver { get => isGameOver; set => isGameOver = value; }
+    public bool IsDead { get => isGameOver; set => isGameOver = value; }
 
     public void TakeDamage(int damage)
     {
         // heal
-        hitPoints -= damage;
-        if (hitPoints <= 0)
+        int nextHitPoints = hitPoints - damage;
+        if (nextHitPoints > 0) hitPoints = nextHitPoints;
+        else
         {
             if (isHunter)
             {
-                // player die event -> endgame
+                // player die event
+                isGameOver = true;
             }
-            // destroy instance
-            // add points to player
+            else
+            {
+                // destroy instance
+                isDead = true;
+            }
         }
     }
 }

@@ -1,17 +1,21 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MonsterSpawner
 {
     private List<MonsterBase> monsters = new();
-    public void SpawnMonster()
+
+    public List<MonsterBase> Monsters { get => monsters; set => monsters = value; }
+
+    public MonsterBase SpawnMonster(Vector2 position)
     {
-        monsters.Add(ChooseRandomMonster());
+        MonsterBase m = ChooseRandomMonster(position);
+        monsters.Add(m);
+        return m;
     }
-    public MonsterBase ChooseRandomMonster()
+    private MonsterBase ChooseRandomMonster(Vector2 position)
     {
-        int random = (int)UnityEngine.Random.value * 6;
+        int random = (int)(UnityEngine.Random.value * 6);
         MonsterBase randomMonster = random switch
         {
             0 => ScriptableObject.CreateInstance<Angel>(),
@@ -22,6 +26,18 @@ public class MonsterSpawner
             5 => ScriptableObject.CreateInstance<Werewolf>(),
             _ => ScriptableObject.CreateInstance<Demon>(),
         };
+        randomMonster.position = position;
         return randomMonster;
+    }
+    public void UpdateTargetLocation(Vector2 position)
+    {
+        for (int i = 0; i < monsters.Count; i++)
+        {
+            monsters[i].destination = position;
+        }
+    }
+    public void ClearMonsters()
+    {
+        monsters.Clear();
     }
 }

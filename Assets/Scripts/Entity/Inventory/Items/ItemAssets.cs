@@ -10,22 +10,21 @@ public class ItemAssets : MonoBehaviour
     // item sprites
     public Sprite AmmoBundle;
     public Sprite Bandage;
-    public Sprite Burger;
     public Sprite Beer;
+    public Sprite Burger;
     public Sprite Cocktail;
+    public Sprite MagicCircle;
     public Sprite Pie;
     public Sprite Potion;
     public Sprite Salad;
     public Sprite Shield;
     public Sprite Whiskey;
+    public Sprite WipeEnemies;
     // powerup sprites
     public Sprite Attack;
     public Sprite AttackSpeed;
-    public Sprite HitPoint;
-    public Sprite MagicCircle;
     public Sprite MovementSpeed;
     public Sprite WeaponLevel;
-    public Sprite WipeEnemies;
     // weapon sprites
     public Sprite AngelBlessing;
     public Sprite Book;

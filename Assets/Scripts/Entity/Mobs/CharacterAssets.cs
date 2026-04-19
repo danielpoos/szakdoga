@@ -18,7 +18,6 @@ public class CharacterAssets : MonoBehaviour
     public Sprite Angel;
     public Sprite Demon;
     public Sprite Leviathan;
-    public Sprite Shapeshifter;
     public Sprite Vampire;
     public Sprite Werewolf;
 }

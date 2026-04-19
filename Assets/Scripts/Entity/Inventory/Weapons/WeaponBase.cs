@@ -1,19 +1,21 @@
 public class WeaponBase : Item
 {
     protected int level;
-    protected float durability;
     protected ProjectileBase projectile;
-    public WeaponBase(ItemType itemType)
+
+    public int Level { get => level; set => level = value; }
+    public ProjectileBase Projectile { get => projectile; set => projectile = value; }
+
+    public WeaponBase(ItemType itemType) : base(itemType)
     {
         ItemType = itemType;
         level = 1;
-        durability = 100f;
+        Sprite = GetSprite();
     }
-    public WeaponBase(ItemType itemType, int level, float durability)
+    public WeaponBase(ItemType itemType, int level) : base(itemType)
     {
         ItemType = itemType;
         this.level = level;
-        this.durability = durability;
         Sprite = GetSprite();
     }
     public void SetProjectile()

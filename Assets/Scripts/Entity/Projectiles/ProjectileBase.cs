@@ -5,16 +5,15 @@ public enum ProjectileType
     Bullet,
     Fire,
     Slash,
-    Spell,
-
+    Spell
 }
 public class ProjectileBase
 {
     protected ProjectileType projectileType;
     protected Sprite sprite;
     protected int damage = 0;
-    protected int range = 0;
-    protected float movementSpeed;
+    protected int range = 100;
+    protected float movementSpeed = 20f;
     // no need ???
     protected Vector2 position;
     protected Vector2 destination;
@@ -26,10 +25,12 @@ public class ProjectileBase
     public Vector2 Position { get => position; set => position = value; }
     public Vector2 Destination { get => destination; set => destination = value; }
     public Quaternion Rotation { get => rotation; set => rotation = value; }
+    public Sprite Sprite { get => sprite; set => sprite = value; }
 
     public ProjectileBase(ProjectileType projectileType)
     {
         this.projectileType = projectileType;
+        this.sprite = GetSprite();
     }
     public Sprite GetSprite()
     {
