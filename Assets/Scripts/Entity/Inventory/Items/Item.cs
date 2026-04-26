@@ -34,6 +34,7 @@ public class Item
     protected Sprite sprite;
     protected int quantity;
     protected int quality;
+    public Vector2 position;
     public Item(ItemType itemType, int quality = 1, int quantity = 1)
     {
         this.itemType = itemType;
@@ -58,13 +59,9 @@ public class Item
             ItemType.Potion => ItemAssets.Instance.Potion,
             ItemType.Salad => ItemAssets.Instance.Salad,
             ItemType.Shield => ItemAssets.Instance.Shield,
+            ItemType.WeaponLevel => ItemAssets.Instance.WeaponLevel,
             ItemType.Whiskey => ItemAssets.Instance.Whiskey,
             ItemType.WipeEnemies => ItemAssets.Instance.WipeEnemies,
-
-            ItemType.Attack => ItemAssets.Instance.Attack,
-            ItemType.AttackSpeed => ItemAssets.Instance.AttackSpeed,
-            ItemType.MovementSpeed => ItemAssets.Instance.MovementSpeed,
-            ItemType.WeaponLevel => ItemAssets.Instance.WeaponLevel,
 
             ItemType.AngelBlessing => ItemAssets.Instance.AngelBlessing,
             ItemType.Book => ItemAssets.Instance.Book,

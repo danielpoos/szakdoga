@@ -4,6 +4,7 @@ public class Shapeshifter : MonsterBase
 {
     private void Awake()
     {
+        SetupMonsterBase();
         //red outline??
         sprite = (int)(UnityEngine.Random.value * 6) switch
         {
@@ -15,6 +16,5 @@ public class Shapeshifter : MonsterBase
             _ => CharacterAssets.Instance.Bobby,
         };
         itemDrop = new(ItemType.Bandage);
-        MaxHP = hitPoints = 100;
     }
 }

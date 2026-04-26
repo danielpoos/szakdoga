@@ -19,11 +19,12 @@ public class PauseMenuBehaviour : MonoBehaviour
     private string saveFileName = "";
     private void Awake()
     {
+        gameSetting.IsPaused = true;
         saveGameBackground.SetActive(false);
         areYouSureObject.SetActive(false);
         saveGameMenu.SetActive(false);
         errorText.text = "";
-        inventoryExtended.SetInventory(gameSetting.Player.Inventory);
+        inventoryExtended.SetInventory(gameSetting.Hunter.Inventory);
     }
     private void Start()
     {
@@ -47,16 +48,20 @@ public class PauseMenuBehaviour : MonoBehaviour
             {
                 HideSaveGame();
             }
-            else BackToGame();
+            else
+            {
+                BackToGame();
+            }
         }
     }
     // stat info popup
     private bool HasEnoughMoney(int price)
     {
-        return gameSetting.Player.Money >= price;
+        return gameSetting.Hunter.HasEnoughMoney(price);
     }
     public void MergeItems()
     {
+        if (HasEnoughMoney(100)) { }
         // check money
     }
     public void LevelUpWeapon()

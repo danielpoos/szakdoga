@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class ItemOnGround : MonoBehaviour
 {
@@ -6,6 +7,8 @@ public class ItemOnGround : MonoBehaviour
     private Rigidbody2D rb;
     private BoxCollider2D boxCollider;
     private SpriteRenderer spriteRenderer;
+    public bool IsPickedUp = false;
+    public UnityEvent<Item> PickUpObject = new();
     public Item Item { get => item; set => item = value; }
     private void Awake()
     {
@@ -17,18 +20,21 @@ public class ItemOnGround : MonoBehaviour
     {
         spriteRenderer.sprite = sprite;
     }
-    public Item RecieveItem()
-    {
-        // destroy this after
-        return item;
-    }
     public void SetItem(Item item)
     {
         this.item = item;
         spriteRenderer.sprite = item.GetSprite();
     }
+    public void Disappear()
+    {
+        gameObject.SetActive(false);
+    }
     public void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.GetType() == typeof(Player)) Debug.Log(item + " collided with " + other.name+ " " + other.GetType());
+        if (other.gameObject.CompareTag("Player"))
+        {
+            PickUpObject.Invoke(item);
+            IsPickedUp = true;
+        }
     }
 }

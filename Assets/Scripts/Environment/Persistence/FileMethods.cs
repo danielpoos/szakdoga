@@ -1,7 +1,6 @@
 using System.IO;
 using System.Text;
 using UnityEngine;
-
 public class FileMethods
 {
     public static GameSetting LoadGame(string fileName, GameSetting gameSetting)
@@ -9,23 +8,43 @@ public class FileMethods
         string saveFile = Path.Combine(Application.persistentDataPath, gameSetting.SaveFileName);
         if (!File.Exists(saveFile)) return gameSetting;
         string[] lines = File.ReadAllLines(saveFile);
+        string[] split;
         gameSetting.SaveFileName = fileName;
         gameSetting.PlayerName = lines[0];
-        gameSetting.DiffInt = int.Parse(lines[1]);
-        gameSetting.RoundNum = int.Parse(lines[2]);
-        gameSetting.Timer = float.Parse(lines[3]);
-        gameSetting.PlayerPosition = new Vector2(float.Parse(lines[4].Split(',')[0]), float.Parse(lines[4].Split(',')[1]));
-        gameSetting.BackgroundPosition = new Vector2(float.Parse(lines[5].Split(',')[0]), float.Parse(lines[5].Split(',')[1]));
-        gameSetting.Player.Money = int.Parse(lines[6]);
-        gameSetting.Player.Score = int.Parse(lines[7]);
-        gameSetting.Hunter.Weapon.ItemType = (ItemType)int.Parse(lines[8]);
-        gameSetting.Hunter.Weapon.Level = int.Parse(lines[9]);
-        gameSetting.Player.Inventory = new();
-        for (int i = 11; i < lines.Length - 1; i++)
+        split = lines[1].Split(',');
+        gameSetting.DiffInt = int.Parse(split[0]);
+        gameSetting.RoundNum = int.Parse(split[1]);
+        split = lines[2].Split(',');
+        gameSetting.Timer = float.Parse(split[0]);
+        gameSetting.PlayerPosition = new Vector2(float.Parse(split[1]), float.Parse(split[2]));
+        split = lines[3].Split(',');
+        gameSetting.Hunter = (ItemType)int.Parse(split[7]) switch
+        {
+            ItemType.AngelBlessing => ScriptableObject.CreateInstance<Castiel>(),
+            ItemType.Book => ScriptableObject.CreateInstance<Rowena>(),
+            ItemType.Flamethrower => ScriptableObject.CreateInstance<Bobby>(),
+            ItemType.Machete => ScriptableObject.CreateInstance<Sam>(),
+            ItemType.Pistol => ScriptableObject.CreateInstance<Dean>(),
+            ItemType.Shotgun => ScriptableObject.CreateInstance<Jody>(),
+            _ => ScriptableObject.CreateInstance<Dean>(),
+        };
+        gameSetting.Hunter.Level = int.Parse(split[0]);
+        gameSetting.Hunter.XP = int.Parse(split[1]);
+        gameSetting.Hunter.MaxHP = int.Parse(split[2]);
+        gameSetting.Hunter.HP = int.Parse(split[3]);
+        gameSetting.Hunter.Attack = int.Parse(split[4]);
+        gameSetting.Hunter.Money = int.Parse(split[5]);
+        gameSetting.Hunter.Score = int.Parse(split[6]);
+        gameSetting.Hunter.Weapon.ItemType = (ItemType)int.Parse(split[7]);
+        gameSetting.Hunter.Weapon.Level = int.Parse(split[8]);
+        gameSetting.Hunter.Difficulty = gameSetting.Difficulty;
+        gameSetting.Hunter.rotation = bool.Parse(lines[4]);
+        gameSetting.Hunter.Inventory = new();
+        for (int i = 5; i < lines.Length; i++)
         {
             string[] sl = lines[i].Split(',');
             Item item = new((ItemType)int.Parse(sl[0]), int.Parse(sl[1]), int.Parse(sl[2]));
-            gameSetting.Player.Inventory.AddItem(item);
+            gameSetting.Hunter.Inventory.AddItem(item);
         }
         return gameSetting; 
     }
@@ -34,19 +53,15 @@ public class FileMethods
         bool isSaved = false;
         string saveFile = Path.Combine(Application.persistentDataPath, gameSetting.SaveFileName);
         if (File.Exists(saveFile)) return isSaved;
-        //JsonUtility.ToJson();
         StringBuilder sb = new();
         sb.AppendLine(gameSetting.PlayerName);
-        sb.AppendLine(gameSetting.DiffInt.ToString());
-        sb.AppendLine(gameSetting.RoundNum.ToString());
-        sb.AppendLine(gameSetting.Timer.ToString());
-        sb.AppendLine(gameSetting.PlayerPosition.x + ","+gameSetting.PlayerPosition.y);
-        sb.AppendLine(gameSetting.BackgroundPosition.x + ","+gameSetting.BackgroundPosition.y);
-        sb.AppendLine(gameSetting.Player.Money.ToString());
-        sb.AppendLine(gameSetting.Player.Score.ToString());
-        sb.AppendLine(((int)gameSetting.Hunter.Weapon.ItemType).ToString());
-        sb.AppendLine(gameSetting.Hunter.Weapon.Level.ToString());
-        foreach (Item item in gameSetting.Player.Inventory.GetItems())
+        sb.AppendLine(gameSetting.DiffInt.ToString()+ ","+gameSetting.RoundNum.ToString());
+        sb.AppendLine(gameSetting.Timer.ToString() + "," + gameSetting.PlayerPosition.x + "," + gameSetting.PlayerPosition.y);
+        sb.AppendLine(gameSetting.Hunter.Level.ToString() + "," + gameSetting.Hunter.XP.ToString() + "," + gameSetting.Hunter.MaxHP.ToString() 
+            + "," + gameSetting.Hunter.HP.ToString() + "," + gameSetting.Hunter.Attack.ToString() + "," + gameSetting.Hunter.Money.ToString() 
+            + "," + gameSetting.Hunter.Score.ToString() + "," + ((int)gameSetting.Hunter.Weapon.ItemType).ToString() + "," + gameSetting.Hunter.Weapon.Level.ToString());
+        sb.AppendLine(gameSetting.Hunter.rotation.ToString());
+        foreach (Item item in gameSetting.Hunter.Inventory.GetItems())
         {
             sb.AppendLine(((int)item.ItemType).ToString()+","+item.Quality.ToString()+","+item.Quantity.ToString());
         }

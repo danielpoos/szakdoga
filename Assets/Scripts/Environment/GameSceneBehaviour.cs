@@ -1,172 +1,168 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameSceneBehaviour : MonoBehaviour
 {
     #region Variables
     [SerializeField] private GameSetting gameSetting;
-    [SerializeField] private Camera cam;
+    [SerializeField] private Canvas gameCanvas;
+    [SerializeField] private Canvas roundCanvas;
+    [SerializeField] private BuyMenu buyMenuCanvas;
     [SerializeField] private GameObject playgroundObject;
+    [SerializeField] private CanvasGroup uiCanvasGroup;
+
     [SerializeField] private Player playerObject;
+    [SerializeField] private MonsterObject monsterGameObject;
     [SerializeField] private ItemOnGround droppedItemGameObject;
     [SerializeField] private ProjectileObject projectileGameObject;
-    [SerializeField] private MonsterObject monsterGameObject;
     [SerializeField] private Material backgroundMat;
 
     [SerializeField] private InventoryExtended inventoryLine;
     [SerializeField] private InventoryExtended inventoryExtended;
+    [SerializeField] private GameObject xpBar;
     [SerializeField] private GameObject healthBar;
     [SerializeField] private TMP_Text moneyText;
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text timeText;
+    [SerializeField] private GameObject statObject;
 
-    [SerializeField] private Canvas roundCanvas;
-    [SerializeField] private Canvas buyMenuCanvas;
+    private float maxXPValue;
+    private RectTransform gainedXP;
+    private float maxHealthValue;
+    private RectTransform remainingHealth;
+    private TMP_Text remainingHealthText;
 
     private float spawnTime;
     private float elapsedMonsterSpawnTime;
     private float elapsedAdvanceToNextRoundTime;
 
-    private Vector2 backgroundOffset;
+    private Vector2 absolutePlayerPosition;
     private GameObject heldItemGameObject;
     private SpriteRenderer heldItemSpriteRenderer;
-    private BoxCollider2D droppedItemBoxCollider;
-    private SpriteRenderer droppedItemSpriteRenderer;
-    //private BoxCollider2D monsterBoxCollider;
-    //private SpriteRenderer monsterSpriteRenderer;
 
-    private List<MonsterObject> enemyObjects;
-    private List<ItemOnGround> droppedItemObjects;
-    private List<ProjectileObject> projectiles;
+    private List<MonsterObject> enemyObjects = new();
+    private List<ItemOnGround> droppedItemObjects = new();
+    private List<ProjectileObject> projectiles = new();
+    private UnityAction<MonsterObject> MonsterDeadAction;
+    private UnityAction PlayerDeadAction;
 
-    private float maxHealthValue;
-    private RectTransform remainingHealth;
-    private TMP_Text remainingHealthText;
-
+    private bool isStatShown = false;
     private bool isRoundShown = false;
     private bool isBuyMenuShown = false;
     private bool isInventoryShown = false;
-    private bool isSceneJustLoaded;
     private int[] coordinates = { 300, -300, 150, -150 };
     #endregion
     #region Init
     private void Awake()
     {
-        //player
         Player p = Instantiate(playerObject, playgroundObject.transform);
-        p.SetPlayer(gameSetting.Difficulty);
-        p.transform.position = gameSetting.PlayerPosition;
-        p.Hunter = gameSetting.Hunter;
         gameSetting.Player = p;
+        p.Hunter = gameSetting.Hunter;
+        p.transform.position = gameSetting.PlayerPosition;
         p.gameObject.SetActive(true);
         playerObject.gameObject.SetActive(false);
-        if (gameSetting.Player.Score == 0) scoreText.enabled = false;
         p.ChangeSprite(p.Hunter.Sprite);
-        gameSetting.Player.SetWeapon();
         heldItemGameObject = p.transform.Find("Item").gameObject;
-        //scene
+        absolutePlayerPosition = new(Screen.width - Screen.width / 2+gameSetting.PlayerPosition.x, Screen.height - Screen.height / 2 + 60+gameSetting.PlayerPosition.y);
+        PlayerDeadAction += EndGame;
+        Player.PlayerDead.AddListener(PlayerDeadAction);
         InitScene();
 
         if (gameSetting.IsNewGame)
         {
-            gameSetting.IsNewGame = false;
             gameSetting.Timer = 0;
             gameSetting.RoundNum = 0;
-            droppedItemObjects.Clear();
-            enemyObjects.Clear();
             gameSetting.PlayerPosition = new(0, 0);
             gameSetting.Spawner.ClearMonsters();
             gameSetting.ItemsOnGround.Clear();
         }
         else if (gameSetting.IsLoadedGame)
         {
-            gameSetting.IsLoadedGame = false;
-            droppedItemObjects.Clear();
-            enemyObjects.Clear();
             gameSetting.Spawner.ClearMonsters();
             gameSetting.ItemsOnGround.Clear();
         }
         else
         {
-            foreach (MonsterBase nm in gameSetting.Spawner.Monsters)
-            {
-                MonsterObject m = MonsterObject.Instantiate(monsterGameObject, playgroundObject.transform);
-                m.gameObject.SetActive(true);
-                m.transform.position = nm.position;
-                m.SetMonster(nm);
-                m.ChangeSprite(nm.Sprite);
-                //monsterGameObject.spriteRenderer.sprite = nm.Sprite;
-                enemyObjects.Add(m);
-            }
+            LoadScene();
         }
-        //playerObject.transform.position = gameSetting.PlayerPosition;
+        if (gameSetting.Player.Hunter.Score == 0) scoreText.enabled = false;
         gameSetting.Player.transform.position = gameSetting.PlayerPosition;
     }
     void Start()
     {
-        if (gameSetting.IsNewGame || gameSetting.IsLoadedGame)
-        {
-            TriggerNextRound();
-        }
-        heldItemSpriteRenderer.sprite = gameSetting.Player.CurrentItem.Sprite;
-        backgroundOffset = gameSetting.Player.Hunter.position;
-        backgroundMat.mainTextureOffset = backgroundOffset;
+        HandleSceneChange();
+        heldItemSpriteRenderer.sprite = gameSetting.Player.Hunter.CurrentItem.Sprite;
+        backgroundMat.mainTextureOffset = gameSetting.Player.Hunter.position;
     }
     void Update()
     {
         UpdateTexts();
-        //if (elapsedAdvanceToNextRoundTime > 60 && gameSetting.Player.Hunter.Level)
-        TriggerNextRound();
-        if (!isBuyMenuShown || !isRoundShown)
+        HandleSceneChange();
+        if (!isBuyMenuShown && !isRoundShown)
         {
             gameSetting.Timer += Time.deltaTime;
             elapsedMonsterSpawnTime += Time.deltaTime;
             elapsedAdvanceToNextRoundTime += Time.deltaTime;
+            MovePlayer();
+            MoveMonsters();
+            MoveProjectiles();
+            if (elapsedMonsterSpawnTime > spawnTime)
+            {
+                elapsedMonsterSpawnTime -= spawnTime;
+                SpawnMonster();
+            }
         }
-        MovePlayer();
-        MoveMonsters();
         if (Input.anyKeyDown) OnKeyDown();
-        if (elapsedMonsterSpawnTime > spawnTime)
-        {
-            elapsedMonsterSpawnTime -= spawnTime;
-            SpawnMonster();
-        }
+        UpdateObjects();
     }
     private void InitScene()
     {
         heldItemSpriteRenderer = heldItemGameObject.GetComponent<SpriteRenderer>();
-        droppedItemBoxCollider = droppedItemGameObject.GetComponent<BoxCollider2D>();
-        droppedItemSpriteRenderer = droppedItemGameObject.GetComponent<SpriteRenderer>();
+        maxXPValue = xpBar.transform.GetComponent<RectTransform>().sizeDelta.x;
+        gainedXP = xpBar.transform.Find("Gained").GetComponent<RectTransform>();
         maxHealthValue = healthBar.transform.GetComponent<RectTransform>().sizeDelta.x;
         remainingHealth = healthBar.transform.Find("Remaining").GetComponent<RectTransform>();
         remainingHealthText = healthBar.transform.Find("RemainingText").GetComponent<TMP_Text>();
+        
+        MonsterDeadAction += Collision;
+        MonsterObject.MonsterDead.AddListener(MonsterDeadAction);
 
-        isSceneJustLoaded = true;
         enemyObjects = new();
         droppedItemObjects = new();
         projectiles = new();
         elapsedMonsterSpawnTime = 0;
         elapsedAdvanceToNextRoundTime = 0;
-        spawnTime = 1 / gameSetting.Player.Hunter.Level;
         heldItemSpriteRenderer.sprite = gameSetting.Player.Hunter.Weapon.GetSprite();
-        inventoryLine.SetInventory(gameSetting.Player.Inventory);
-        inventoryExtended.SetInventory(gameSetting.Player.Inventory);
+        spawnTime = gameSetting.DiffInt switch
+        {
+            1=> 3.5f,
+            2=> 2,
+            _=> 5,
+        };
+        inventoryLine.SetInventory(gameSetting.Player.Hunter.Inventory);
+        inventoryExtended.SetInventory(gameSetting.Player.Hunter.Inventory);
     }
-    public void Pause()
+    #endregion
+    #region Functions
+    private void Pause()
     {
+        SaveScene();
         SceneManager.LoadScene("PauseMenu", LoadSceneMode.Single);
     }
     private void UpdateTexts()
     {
-        moneyText.text = "$ " + gameSetting.Player.Money;
-        if (gameSetting.Player.Score != 0)
+        moneyText.text = "$ " + gameSetting.Player.Hunter.Money;
+        if (gameSetting.Player.Hunter.Score != 0)
         {
-            scoreText.text = "" + gameSetting.Player.Score;
+            scoreText.text = "" + gameSetting.Player.Hunter.Score;
             scoreText.enabled = true;
         }
         int hour = (int)(gameSetting.Timer / 3600);
@@ -174,12 +170,109 @@ public class GameSceneBehaviour : MonoBehaviour
         int sec = (int)(gameSetting.Timer % 60);
         TimeSpan ts = new(hour, min, sec);
         timeText.text = $"{ts:c}";
+        float xpWidth = maxXPValue * gameSetting.Player.Hunter.XP / gameSetting.Player.Hunter.ExperienceForNextLevel();
+        gainedXP.sizeDelta = new Vector2(maxXPValue - xpWidth, gainedXP.sizeDelta.y);
+        gainedXP.position = new Vector3(xpWidth / 2.0f, gainedXP.position.y, 0);
         remainingHealthText.text = $"{gameSetting.Player.Hunter.HP}/{gameSetting.Player.Hunter.MaxHP}";
-        remainingHealth.sizeDelta = new Vector2(gameSetting.Player.Hunter.MaxHP / gameSetting.Player.Hunter.HP * maxHealthValue, remainingHealth.sizeDelta.y);
+        remainingHealth.sizeDelta = new Vector2(maxHealthValue * gameSetting.Player.Hunter.HP / gameSetting.Player.Hunter.MaxHP, remainingHealth.sizeDelta.y);
+        statObject.GetComponentsInChildren<TMP_Text>()[0].text = $"LVL: {gameSetting.Player.Hunter.Level}";
+        statObject.GetComponentsInChildren<TMP_Text>()[1].text = $"ATK: {gameSetting.Player.Hunter.Attack}";
+        statObject.GetComponentsInChildren<TMP_Text>()[2].text = $"HP : {gameSetting.Player.Hunter.HP}";
+        statObject.GetComponentsInChildren<TMP_Text>()[3].text = $"MAX: {gameSetting.Player.Hunter.MaxHP}";
+        statObject.GetComponentsInChildren<TMP_Text>()[4].text = $"XP : {gameSetting.Player.Hunter.XP}";
+        statObject.GetComponentsInChildren<TMP_Text>()[5].text = $"MAX: {gameSetting.Player.Hunter.ExperienceForNextLevel()}";
+    }
+    private void LoadScene()
+    {
+        string valami = "";
+        foreach (MonsterBase m in gameSetting.Spawner.Monsters)
+        {
+            MonsterObject mo = MonsterObject.Instantiate(monsterGameObject, playgroundObject.transform);
+            mo.gameObject.SetActive(true);
+            mo.transform.position = m.position;
+            mo.SetMonster(m);
+            mo.ChangeSprite(m.Sprite);
+            enemyObjects.Add(mo);
+            valami += $"{m.position}={mo.Monster.position} ";
+        }
+        valami += "\n";
+        foreach (Item i in gameSetting.ItemsOnGround)
+        {
+            ItemOnGround it = ItemOnGround.Instantiate(droppedItemGameObject, playgroundObject.transform);
+            it.gameObject.SetActive(true);
+            it.transform.position = i.position;
+            it.SetItem(i);
+            it.ChangeSprite(i.Sprite);
+            droppedItemObjects.Add(it);
+            valami += $"{i.position}={it.Item.position} ";
+        }
+        File.WriteAllText("asd.txt", valami);
+    }
+    private void SaveScene()
+    {
+        gameSetting.Hunter = gameSetting.Player.Hunter;
+        gameSetting.Spawner.Monsters.Clear();
+        gameSetting.ItemsOnGround.Clear();
+        string a = "";
+        foreach (MonsterObject mon in enemyObjects)
+        {
+            gameSetting.Spawner.Monsters.Add(mon.Monster);
+            a += mon.Monster.position;
+        }
+        a += "\n";
+        foreach (ItemOnGround item in droppedItemObjects)
+        {
+            gameSetting.ItemsOnGround.Add(item.Item);
+            a += item.Item.position;
+        }
+        File.WriteAllText("a.txt", a);
+    }
+    private void UpdateObjects()
+    {
+        absolutePlayerPosition = new(Screen.width - Screen.width / 2 + gameSetting.Player.transform.position.x, Screen.height - Screen.height / 2 + 60 + gameSetting.Player.transform.position.y);
+        try
+        {
+            foreach (MonsterObject m in enemyObjects)
+            {
+                if (m.gameObject.activeSelf && m.Monster.IsDead)
+                {
+                    m.gameObject.SetActive(false);
+                    gameSetting.Spawner.Monsters.Remove(m.Monster);
+                    enemyObjects.Remove(m);
+                }
+            }
+            foreach (ItemOnGround i in droppedItemObjects)
+            {
+                if (i.gameObject.activeSelf && i.IsPickedUp)
+                {
+                    i.gameObject.SetActive(false);
+                    gameSetting.ItemsOnGround.Remove(i.Item);
+                    droppedItemObjects.Remove(i);
+                }
+            }
+            foreach (ProjectileObject p in projectiles)
+            {
+                if (p.gameObject.activeSelf && p.IsHit)
+                {
+                    p.gameObject.SetActive(false);
+                    projectiles.Remove(p);
+                }
+            }
+        }
+        catch (Exception) { }
+        inventoryLine.SetInventory(gameSetting.Player.Hunter.Inventory);
+        inventoryExtended.SetInventory(gameSetting.Player.Hunter.Inventory);
+        foreach (Transform child in playgroundObject.transform)
+        {
+            if (child.gameObject.activeSelf == false)
+            {
+                GameObject.Destroy(child.gameObject);
+            }
+        }
     }
     private void OnKeyDown()
     {
-        if (Input.GetKey(KeyCode.Mouse0))
+        if (Input.GetKey(KeyCode.Mouse0) && !isBuyMenuShown)
         {
             ShootProjectile(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
         }
@@ -194,52 +287,56 @@ public class GameSceneBehaviour : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.Q))
         {
-            //weapon -> item
-            //item -> weapon
-            //prev item
-            // cannot cycle
+            Debug.Log(gameSetting.Player.Hunter.CurrentItem);
+            SwitchItem(true);
         }
         if (Input.GetKey(KeyCode.E))
         {
-            //weapon -> item
-            //item -> weapon
-            //next item
-            // cannot cycle
+            Debug.Log(gameSetting.Player.Hunter.CurrentItem);
+            SwitchItem(false);
         }
         if (Input.GetKey(KeyCode.T))
         {
-            //inventory
             isInventoryShown = !isInventoryShown;
             inventoryExtended.enabled = isInventoryShown;
             inventoryExtended.gameObject.SetActive(isInventoryShown);
             inventoryLine.enabled = !isInventoryShown;
             inventoryLine.gameObject.SetActive(!isInventoryShown);
-            inventoryLine.SetInventory(gameSetting.Player.Inventory);
-            inventoryExtended.SetInventory(gameSetting.Player.Inventory);
+            inventoryLine.SetInventory(gameSetting.Player.Hunter.Inventory);
+            inventoryExtended.SetInventory(gameSetting.Player.Hunter.Inventory);
         }
-        if (Input.GetKey(KeyCode.F))
+        if (Input.GetKey(KeyCode.R))
         {
-            //interact
-            //throw item
+            if (isStatShown) HideStats();
+            else ShowStats();
+            isStatShown = !isStatShown;
         }
+    }
+    private void SwitchItem(bool forward)
+    {
+        if (forward) gameSetting.Player.Hunter.SwitchForward();
+        else gameSetting.Player.Hunter.SwitchBackward();
+        heldItemSpriteRenderer.sprite = gameSetting.Player.Hunter.CurrentItem.Sprite;
     }
     #endregion
     #region Movement
     private void MoveScene()
     {
-        //rigidBody.linearVelocity = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        //transform.position = backgroundOffset + movement * parallax;
-        // use this as sample for item and enemy movement on new instance or transform
-        backgroundMat.mainTextureOffset += (gameSetting.Player.Hunter.MovementSpeed/20) * Time.deltaTime * gameSetting.Player.Hunter.position.normalized;
         gameSetting.BackgroundPosition = backgroundMat.mainTextureOffset;
-        //Debug.Log(gameSetting.BackgroundPosition+ " "+ playerObject.transform.position + " " + backgroundOffset + " "+ playerObject.transform.position.x/gameSetting.BackgroundPosition.x+" "+ playerObject.transform.position.y/gameSetting.BackgroundPosition.y);
-        // select sprite
-        // use sprite animations
-        // rigidBody.MovePosition(rigidBody.position + hunter.MovementSpeed * Time.unscaledDeltaTime * movementDirection);
+        backgroundMat.mainTextureOffset += (gameSetting.Player.Hunter.MovementSpeed/20) * Time.deltaTime * gameSetting.Player.Hunter.position.normalized;
+        Vector2 movebg = -gameSetting.Player.Hunter.MovementSpeed * (3 / 4.0f) * Time.deltaTime * gameSetting.Player.Hunter.position.normalized;
+        foreach (ItemOnGround item in droppedItemObjects)
+        {
+            item.transform.Translate(movebg);
+        }
+        foreach (MonsterObject m in enemyObjects)
+        {
+            m.transform.Translate(movebg);
+        }
+        // future update: use sprite animations
     }
     private void MovePlayer()
     {
-        // an invisible rectangle
         int maxX = coordinates[0];
         int minX = coordinates[1];
         int maxY = coordinates[2];
@@ -248,42 +345,9 @@ public class GameSceneBehaviour : MonoBehaviour
         float vertical = Input.GetAxis("Vertical");
         Vector2 playerPos = gameSetting.Player.Hunter.MovementSpeed * Time.deltaTime * new Vector2(horizontal, vertical);
         gameSetting.Player.Hunter.position = playerPos;
-        Vector2 negativPlayerPos = playerPos * new Vector2(-1, 1);
+        gameSetting.Player.transform.Translate(playerPos);
         // rotate player
-        bool rotatePlayer;
-        if (horizontal > 0)
-        {
-            rotatePlayer = false;
-            gameSetting.Player.Hunter.rotation = rotatePlayer;
-            //playerObject.transform.rotation = new Quaternion(0, 0, 0, 0);
-            //playerObject.transform.Translate(playerPos);
-            gameSetting.Player.transform.rotation = new Quaternion(0, 0, 0, 0);
-            gameSetting.Player.transform.Translate(playerPos);
-            heldItemGameObject.transform.rotation = new Quaternion(0, 0, 0, 0);
-        }
-        else
-        {
-            rotatePlayer = gameSetting.Player.Hunter.rotation;
-            if (horizontal == 0 && rotatePlayer)
-            {
-                gameSetting.Player.transform.rotation = new Quaternion(0, 180, 0, 0);
-                gameSetting.Player.transform.Translate(negativPlayerPos);
-                heldItemGameObject.transform.rotation = new Quaternion(0, 180, 0, 0);
-            }
-            else if (horizontal == 0 && !rotatePlayer){
-                gameSetting.Player.transform.rotation = new Quaternion(0, 0, 0, 0);
-                gameSetting.Player.transform.Translate(playerPos);
-                heldItemGameObject.transform.rotation = new Quaternion(0, 0, 0, 0);
-            }
-            else
-            {
-                rotatePlayer = true;
-                gameSetting.Player.Hunter.rotation = rotatePlayer;
-                gameSetting.Player.transform.rotation = new Quaternion(0, 180, 0, 0);
-                gameSetting.Player.transform.Translate(negativPlayerPos);
-                heldItemGameObject.transform.rotation = new Quaternion(0, 180, 0, 0);
-            }
-        }
+        FlipPlayer(horizontal);
         // move player inside an invisible rectangle
         if (Math.Abs(gameSetting.Player.transform.position.x) < maxX && Math.Abs(gameSetting.Player.transform.position.y) < maxY)
         {
@@ -341,65 +405,77 @@ public class GameSceneBehaviour : MonoBehaviour
                     }
                 }
             }
-            //refactor
-            //if (gameSetting.Player.transform.position.x >= maxX)
-            //{
-            //    if (gameSetting.Player.transform.position.y <= minY) { gameSetting.PlayerPosition = new Vector2(maxX, minY);  }
-            //    else if (gameSetting.Player.transform.position.y >= maxY) {gameSetting.PlayerPosition = new Vector2(maxX, maxY);  }
-            //    else gameSetting.PlayerPosition = new Vector2(maxX, gameSetting.Player.transform.position.y);
-            //}
-            //if (gameSetting.Player.transform.position.x <= minX)
-            //{
-            //    if (gameSetting.Player.transform.position.y <= minY) {gameSetting.PlayerPosition = new Vector2(minX, minY);  }
-            //    else if (gameSetting.Player.transform.position.y >= maxY) {gameSetting.PlayerPosition = new Vector2(minX, maxY);  }
-            //    else gameSetting.PlayerPosition = new Vector2(minX, gameSetting.Player.transform.position.y);
-            //}
-            //if (gameSetting.Player.transform.position.y <= minY)
-            //{
-            //    if (gameSetting.Player.transform.position.x >= maxX){ gameSetting.PlayerPosition = new Vector2(maxX, minY);  }
-            //    else if (gameSetting.Player.transform.position.x <= minX) {gameSetting.PlayerPosition = new Vector2(minX, minY);  }
-            //    else gameSetting.PlayerPosition = new Vector2(gameSetting.Player.transform.position.x, minY);
-            //}
-            //if (gameSetting.Player.transform.position.y >= maxY)
-            //{
-            //    if (gameSetting.Player.transform.position.x >= maxX) {gameSetting.PlayerPosition = new Vector2(maxX, maxY);  }
-            //    else if (gameSetting.Player.transform.position.x <= minX) {gameSetting.PlayerPosition = new Vector2(minX, maxY);  }
-            //    else gameSetting.PlayerPosition = new Vector2(gameSetting.Player.transform.position.x, maxY);
-            //}
         }
         //pos of background
         gameSetting.Player.transform.position = gameSetting.PlayerPosition;
     }
+    private void FlipPlayer(float horizontal)
+    {
+        bool flipPlayer;
+        if (horizontal > 0)
+        {
+            flipPlayer = false;
+            gameSetting.Player.Hunter.rotation = flipPlayer;
+        }
+        else
+        {
+            if (horizontal == 0)
+            {
+                flipPlayer = gameSetting.Player.Hunter.rotation;
+            }
+            else
+            {
+                flipPlayer = true;
+                gameSetting.Player.Hunter.rotation = flipPlayer;
+            }
+        }
+        gameSetting.Player.Flip(flipPlayer);
+        heldItemSpriteRenderer.flipX = flipPlayer;
+    }
     private void MoveMonsters()
     {
-        // background pos move event
         Vector2 newPosition;
         foreach (MonsterObject m in enemyObjects)
         {
-            float xPos = gameSetting.PlayerPosition.x - m.Monster.position.x;
-            float yPos = gameSetting.PlayerPosition.y - m.Monster.position.y;
+            float xPos = gameSetting.PlayerPosition.x - m.transform.position.x;
+            float yPos = gameSetting.PlayerPosition.y - m.transform.position.y;
             Vector2 toPlayer = new(xPos, yPos);
-            newPosition = m.Monster.MovementSpeed/2 * Time.deltaTime * toPlayer.normalized;
+            bool flipMonster;
+            if (xPos > 0)
+            {
+                flipMonster = false;
+                m.Monster.rotation = flipMonster;
+            }
+            else
+            {
+                if (xPos == 0) flipMonster = m.Monster.rotation;
+                else
+                {
+                    flipMonster = true;
+                    m.Monster.rotation = flipMonster;
+                }
+            }
+            m.Flip(flipMonster);
+            newPosition = gameCanvas.scaleFactor * m.Monster.MovementSpeed/2 * Time.deltaTime * toPlayer.normalized;
             m.Monster.position = newPosition;
             m.transform.Translate(newPosition);
         }
-        //foreach (MonsterBase m in gameSetting.Spawner.Monsters)
-        //{
-        //    newPosition = m.MovementSpeed * Time.deltaTime * m.position - backgroundMat.mainTextureOffset;
-        //    m.position = newPosition;
-        //    m.destination = gameSetting.PlayerPosition;
-        //    foreach (Monster mo in enemyObjects)
-        //    {
-        //        mo.transform.position = newPosition;
-        //    }
-        //}
     }
     private void MoveProjectiles()
     {
         foreach (ProjectileObject proj in projectiles)
         {
-            //proj.GetProjectile().Destination;
-            //get there and disappear
+            if (proj == null || proj.Projectile == null) continue;
+            Vector3 nextPos = gameCanvas.scaleFactor * proj.Projectile.MovementSpeed * Time.deltaTime * proj.Projectile.Destination.normalized;
+            if (Math.Sqrt(Math.Pow(proj.Projectile.Destination.x - nextPos.x, 2) + Math.Pow(proj.Projectile.Destination.y - nextPos.y, 2)) < 0)
+            {
+                proj.gameObject.SetActive(false);
+                projectiles.Remove(proj);
+            }
+            else
+            {
+                proj.transform.Translate(nextPos);
+            }
         }
     }
     #endregion
@@ -418,7 +494,7 @@ public class GameSceneBehaviour : MonoBehaviour
             startPosition = new(startX, startY);
         }
         //while (Math.Pow(startPosition.x - gameSetting.PlayerPosition.x, 2) + Math.Pow(startPosition.y - gameSetting.PlayerPosition.y, 2) > Math.Pow(50, 2));
-        while (Math.Abs(gameSetting.PlayerPosition.x - startPosition.x) > 100 && Math.Abs(gameSetting.PlayerPosition.y - startPosition.y) > 100);
+        while (Math.Abs(gameSetting.PlayerPosition.x - startPosition.x) < 100 && Math.Abs(gameSetting.PlayerPosition.y - startPosition.y) < 100);
 
         //set monster object
         MonsterBase newMonster = gameSetting.Spawner.SpawnMonster(startPosition);
@@ -426,57 +502,41 @@ public class GameSceneBehaviour : MonoBehaviour
         m.gameObject.SetActive(true);
         m.transform.position = startPosition;
         m.SetMonster(newMonster);
-        //monsterGameObject.spriteRenderer.sprite = newMonster.Sprite;
+        m.Monster.LevelUpMonster(gameSetting.Player.Hunter.Level);
         m.ChangeSprite(newMonster.Sprite);
         enemyObjects.Add(m);
-        //m.spriteRenderer = monsterGameObject.spriteRenderer;
     }
-    public void SpawnMonster()
+    private void SpawnMonster()
     {
         SpawnMonsterOnLocation();
-        // move with backgr
         gameSetting.Spawner.UpdateTargetLocation(gameSetting.PlayerPosition);
     }
-    private void DestroyMonster()
-    {
-        //MonsterBase newMonster = gameSetting.Spawner.SpawnMonster(startPosition);
-        //Monster m = Monster.Instantiate(monsterGameObject);
-        //m.gameObject.SetActive(true);
-        //m.transform.position = startPosition;
-        //m.SetMonster(newMonster);
-        //enemyObjects.Add(m);
-    }
-    private void DropItemOnGround(Item item)
+    private void DropItemOnGround(Item item, Vector2 position)
     {
         gameSetting.ItemsOnGround.Add(item);
-        //droppedItemObjects.Add(ScriptableObject.CreateInstance<ItemOnGround>(item));
-
+        ItemOnGround droppedItem = Instantiate(droppedItemGameObject, playgroundObject.transform);
+        droppedItem.gameObject.SetActive(true);
+        droppedItem.transform.position = item.position = position;
+        droppedItem.SetItem(item);
+        droppedItem.ChangeSprite(item.GetSprite());
+        droppedItemObjects.Add(droppedItem);
     }
     #endregion
     #region Round
     private void TriggerNextRound()
     {
-        //open buymenu before next round
-        if (gameSetting.Player.CanGoNextRound)
-        {
-            gameSetting.Player.CanGoNextRound = false;
-            gameSetting.RoundNum += 1;
-            if (gameSetting.RoundNum > 10) SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
-            //delete all entity from map
-            gameSetting.Spawner.ClearMonsters();
-            gameSetting.ItemsOnGround.Clear();
-            roundCanvas.gameObject.SetActive(true);
-            StartCoroutine(RoundDelay());
-            if(!gameSetting.IsNewGame && !gameSetting.IsLoadedGame && !isSceneJustLoaded) ShowBuyMenu();
+        elapsedAdvanceToNextRoundTime = 0;
+        gameSetting.Player.Hunter.CanGoNextRound = false;
+        gameSetting.RoundNum += 1;
+        if (gameSetting.RoundNum > 10) {
+            SaveScene();
+            SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
+            return;
         }
-        else
-        {
-            isRoundShown = false;
-            roundCanvas.enabled = false;
-        }
-        isSceneJustLoaded = false;
+        roundCanvas.gameObject.SetActive(true);
+        StartCoroutine(RoundDelay());
     }
-    public IEnumerator RoundDelay()
+    private IEnumerator RoundDelay()
     {
         TMP_Text round = roundCanvas.transform.Find("RoundText").GetComponent<TMP_Text>();
         round.GetOrAddComponent<CanvasRenderer>();
@@ -493,50 +553,115 @@ public class GameSceneBehaviour : MonoBehaviour
         round.gameObject.SetActive(false);
         round.enabled = false;
     }
-    public void ShowBuyMenu()
+    private void HandleSceneChange()
     {
+        gameSetting.Player.Hunter.CanGoNextRound = elapsedAdvanceToNextRoundTime > 30 || gameSetting.Player.Hunter.CanGoNextRound;
+        if (gameSetting.IsNewGame || gameSetting.IsLoadedGame)
+        {
+            TriggerNextRound();
+            gameSetting.IsNewGame = false;
+            gameSetting.IsLoadedGame = false;
+        }
+        else if (gameSetting.Player.Hunter.CanGoNextRound)
+        {
+            TriggerNextRound();
+            gameSetting.Player.Hunter.CanGoNextRound = false;
+            ShowBuyMenu();
+        }
+        else if (gameSetting.IsPaused)
+        {
+            gameSetting.IsPaused = false;
+        }
+    }
+    private void ShowBuyMenu()
+    {
+        //stackoverflow
         isBuyMenuShown = true;
         buyMenuCanvas.enabled = true;
         buyMenuCanvas.gameObject.SetActive(true);
-        this.enabled = false;
+        buyMenuCanvas.GenerateItems(gameSetting.Player.Hunter.Level, gameSetting.DiffInt+1);
+        for (int i = 0; i < 6; i++)
+        {
+            buyMenuCanvas.transform.Find("ItemSlot").Find(i.ToString()).GetComponent<Button>().onClick.AddListener(delegate { BuyMenuButtonClicked(i); });
+        }
+        playgroundObject.SetActive(false);
+        uiCanvasGroup.interactable = false;
     }
-    public void HideBuyMenu()
+
+    private void BuyMenuButtonClicked(int i)
+    {
+            if (gameSetting.Player.Hunter.HasEnoughMoney(buyMenuCanvas.price[i])) {gameSetting.Player.Hunter.Inventory.AddItem(buyMenuCanvas.items[i]); gameSetting.Player.Hunter.Money -= buyMenuCanvas.price[i]; }
+        // () => { 
+        //    else
+        //    {
+
+        //    }
+        //};
+    }
+
+    private void HideBuyMenu()
     {
         isBuyMenuShown = false;
-        this.enabled = true;
-        buyMenuCanvas.gameObject.SetActive(false);
         buyMenuCanvas.enabled = false;
+        buyMenuCanvas.gameObject.SetActive(false);
+        playgroundObject.SetActive(true);
+        uiCanvasGroup.interactable = true;
+    }
+    private void ShowStats()
+    {
+        statObject.SetActive(true);
+    }
+    private void HideStats()
+    {
+        statObject.SetActive(false);
     }
     #endregion
     #region Collision
-    private void Collision()
+    private void Collision(MonsterObject monster)
     {
-        //player projectile in action
-        //foreach (Monster m in enemyObjects)
-        //{
-        //    m.M.TakeDamage(gameSetting.Player.Hunter.Attack);
-        //}
-        //if mob.isdead => add points to player, dropitem
-        //if isgameover => go to endgame
+        gameSetting.Spawner.Monsters.Remove(monster.Monster);
+        enemyObjects.Remove(monster);
+        gameSetting.Player.Hunter.IncreaseScore(100);
+        gameSetting.Player.Hunter.AddXP(20);
+        gameSetting.Player.Hunter.AddMoney(50);
+        DropItemOnGround(monster.Monster.ItemDrop, monster.transform.position);
+        Destroy(monster);
+    }
+    private void EndGame()
+    {
+        SaveScene();
+        float waitASecond = 0f;
+        while (waitASecond < .5f) waitASecond += Time.deltaTime;
+        SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
     }
     private void ShootProjectile(Vector2 clickPos)
     {
-        if (gameSetting.Player.CurrentItem.GetType() == typeof(WeaponBase))
+        //bool tempRotate = gameSetting.Player.Hunter.rotation;
+        if (gameSetting.Player.Hunter.CurrentItem.GetType() == typeof(WeaponBase))
         {
             ProjectileBase bullet = gameSetting.Player.GetProjectile();
-            //bullet.Position.normalized
-            //bullet.Destination = clickPos;
-            //bullet.Rotation = new Quaternion();
+            Vector2 clickAbsPos = gameSetting.PlayerPosition - absolutePlayerPosition;
+            bullet.Destination = new Vector2(clickPos.x + clickAbsPos.x, clickPos.y + clickAbsPos.y);
+            Vector2 aha = -(gameSetting.PlayerPosition - bullet.Destination);
+            bullet.Destination = aha;
+            //FlipPlayer(bullet.Destination.x);
             ProjectileObject proj = Instantiate(projectileGameObject, playgroundObject.transform);
             proj.gameObject.SetActive(true);
-            proj.transform.position = new Vector2(gameSetting.PlayerPosition.x, gameSetting.PlayerPosition.y - 35);
-            proj.SetProjectile(bullet);
-            proj.ChangeSprite(bullet.Sprite);
+            proj.transform.Find("GameObject").eulerAngles = new Vector3(0, 0, Mathf.Atan2(aha.y, aha.x) * Mathf.Rad2Deg);
+            proj.transform.Find("GameObject").GetComponent<SpriteRenderer>().sprite = bullet.Sprite;
+            proj.transform.position = new Vector2(gameSetting.PlayerPosition.x, gameSetting.PlayerPosition.y + 60);
+            proj.Projectile = bullet;
+            //proj.ChangeSprite(bullet.Sprite);
+            proj.ChangeSprite(null);
             projectiles.Add(proj);
+            //gameSetting.Player.Hunter.rotation = tempRotate;
         }
-        else if (gameSetting.Player.CurrentItem.GetType() == typeof(Item))
+        else if (gameSetting.Player.Hunter.CurrentItem.GetType() == typeof(Item))
         {
             // use and remove from inventory
+            gameSetting.Player.Hunter.UseItem();
+            gameSetting.Player.Hunter.Inventory.RemoveItem(gameSetting.Player.Hunter.CurrentItem);
+            SwitchItem(false);
         }
     }
     #endregion

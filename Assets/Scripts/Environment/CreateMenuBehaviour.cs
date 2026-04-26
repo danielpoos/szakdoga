@@ -16,7 +16,6 @@ public class CreateMenuBehaviour : MonoBehaviour
 
     [SerializeField] private Canvas loadCanvas;
     [SerializeField] private TMP_Text fileNameText;
-    [SerializeField] private Player playerObject;
     [SerializeField] private GameObject loaderObject;
     [SerializeField] private GameObject loadSavedContent;
     [SerializeField] private GameObject savedGameObject;
@@ -120,6 +119,8 @@ public class CreateMenuBehaviour : MonoBehaviour
             // can create a popup or glow to show the unset variables
             return;
         }
+        gameSetting.Hunter.Difficulty = gameSetting.Difficulty;
+        gameSetting.Hunter.SetWeapon();
         gameSetting.RoundNum = 0;
         gameSetting.IsNewGame = true;
         gameSetting.IsLoadedGame = false;

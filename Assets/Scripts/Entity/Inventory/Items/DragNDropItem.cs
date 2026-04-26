@@ -1,48 +1,30 @@
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
-public class DragNDropItem : MonoBehaviour, IPointerDownHandler, IDragHandler, IDropHandler, IBeginDragHandler, IEndDragHandler
+public class DragNDropItem : MonoBehaviour
 {
-    [SerializeField] private Canvas canvas;
-    private Item item;
-    private RectTransform rectTransform;
-    private Image image;
-    private CanvasGroup canvasGroup;
+    private Vector3 mouseOffset;
+    private BoxCollider2D boxCollider;
     private void Awake()
     {
-        rectTransform = gameObject.GetComponent<RectTransform>();
-        image = gameObject.GetComponent<Image>();
-        canvasGroup = gameObject.GetComponent<CanvasGroup>();
+        boxCollider = transform.GetOrAddComponent<BoxCollider2D>();
     }
-    public void SetItem(Item item)
+    private Vector3 GetWorldPosition()
     {
-        this.item = item;
-        image.sprite = item.Sprite;
+        return Camera.main.ScreenToWorldPoint(Input.mousePosition);
     }
-    public void OnPointerDown(PointerEventData eventData)
+    private void OnMouseDown()
     {
-        throw new System.NotImplementedException();
+        Debug.Log("valami");
+        mouseOffset = gameObject.transform.position - GetWorldPosition();
     }
-    public void OnDrag(PointerEventData eventData)
+    private void OnMouseDrag()
     {
-        rectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
+        Debug.Log("valami mas");
+        transform.position = GetWorldPosition() + mouseOffset;
     }
-    public void OnBeginDrag(PointerEventData eventData)
+    private void OnMouseUp()
     {
-        canvasGroup.alpha = .65f;
-        canvasGroup.blocksRaycasts = false;
-    }
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        canvasGroup.alpha = 1f;
-        canvasGroup.blocksRaycasts = true;
-    }
-    public void OnDrop(PointerEventData eventData)
-    {
-        if (eventData.pointerDrag != null)
-        {
-            eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition = GetComponent<RectTransform>().anchoredPosition;
-        }
+        
     }
 }

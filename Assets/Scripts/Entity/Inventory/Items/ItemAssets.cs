@@ -18,13 +18,9 @@ public class ItemAssets : MonoBehaviour
     public Sprite Potion;
     public Sprite Salad;
     public Sprite Shield;
+    public Sprite WeaponLevel;
     public Sprite Whiskey;
     public Sprite WipeEnemies;
-    // powerup sprites
-    public Sprite Attack;
-    public Sprite AttackSpeed;
-    public Sprite MovementSpeed;
-    public Sprite WeaponLevel;
     // weapon sprites
     public Sprite AngelBlessing;
     public Sprite Book;

@@ -95,7 +95,21 @@ public class CraftObject : MonoBehaviour, IDropHandler
                 if (i % 2 == 1) itemsCircle++;
                 else itemsCross++;
             }
+            switch (i)
+            {
+                case 0: items1st4++; break;
+                case 1: items1st4++; items2nd4++; break;
+                case 2: items2nd4++; break;
+                case 3: items1st4++; items3rd4++; break;
+                case 4: items1st4++; items2nd4++; items3rd4++; items4th4++; break;
+                case 5: items2nd4++; items4th4++; break;
+                case 6: items3rd4++; break;
+                case 7: items3rd4++; items4th4++; break;
+                case 8: items4th4++; break;
+                default: break;
+            }
         }
+        if (items1st4 == 4 || items2nd4 == 4 || items3rd4 == 4 || items4th4 == 4 || itemsCircle == 4) canCraft = true;
         return canCraft;
     }
     private bool AreItemsInRow(int range)

@@ -5,10 +5,11 @@ using UnityEngine;
 public class GameSetting : ScriptableObject
 {
     private string playerName = "";
-    private string saveFileName = "supernatural.hex"; // dynamic_naming / name savefile
+    private string saveFileName = "supernatural.hex";
     private string leaderboardFileName = "leaderboard.hexdata";
     private int difficulty;
     private int roundNum = 0;
+    private bool isPaused = false;
     private bool isNewGame = true;
     private bool isLoadedGame = false;
     private float timer = 0f;
@@ -19,13 +20,14 @@ public class GameSetting : ScriptableObject
     private MonsterSpawner spawner = new();
     private List<Item> itemsOnGround = new();
     public string PlayerName { get => playerName; set => playerName = value; }
+    public int RoundNum { get => roundNum; set => roundNum = value; }
+    public int DiffInt { get => difficulty; set => difficulty = value; }
+    public bool IsPaused { get => isPaused; set => isPaused = value; }
     public bool IsNewGame { get => isNewGame; set => isNewGame = value; }
     public bool IsLoadedGame { get => isLoadedGame; set => isLoadedGame = value; }
     public float Timer { get => timer; set => timer = value; }
     public string SaveFileName { get => saveFileName; set => saveFileName = value; }
     public string LeaderboardFileName { get => leaderboardFileName; }
-    public int RoundNum { get => roundNum; set => roundNum = value; }
-    public int DiffInt { get => difficulty; set => difficulty = value; }
     public Difficulty Difficulty { get => (Difficulty)difficulty; }
     public Vector2 PlayerPosition { get => playerPosition; set => playerPosition = value; }
     public Vector2 BackgroundPosition { get => backgroundPosition; set => backgroundPosition = value; }

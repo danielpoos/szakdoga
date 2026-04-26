@@ -21,7 +21,6 @@ public class InventoryExtended : MonoBehaviour, IDropHandler
     }
     private void RefreshInventory()
     {
-
         foreach (Transform child in transform)
         {
             if (child.name == "ItemTemplate") continue;

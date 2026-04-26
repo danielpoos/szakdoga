@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class ProjectileObject : MonoBehaviour
 {
@@ -6,19 +7,16 @@ public class ProjectileObject : MonoBehaviour
     private Rigidbody2D rb;
     private BoxCollider2D boxCollider;
     private SpriteRenderer spriteRenderer;
+    private bool isHit = false;
+    public UnityEvent ProjectileHit = new();
+    public ProjectileBase Projectile { get => probase; set => probase = value; }
+    public bool IsHit { get => isHit; set => isHit = value; }
+
     private void Awake()
     {
         rb = gameObject.GetComponent<Rigidbody2D>();
         boxCollider = gameObject.GetComponent<BoxCollider2D>();
         spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
-    }
-    public void SetProjectile(ProjectileBase pb)
-    {
-        probase = pb;
-    }
-    public ProjectileBase GetProjectile()
-    {
-        return probase;
     }
     public void ChangeSprite(Sprite sprite)
     {
@@ -31,6 +29,9 @@ public class ProjectileObject : MonoBehaviour
     }
     public void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.GetType() == typeof(MonsterObject)) Destroy(this);
+        if (other.gameObject.CompareTag("Monster"))
+        {
+            isHit = true;
+        }
     }
 }
