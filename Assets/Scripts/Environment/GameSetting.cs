@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "GameSetting", menuName = "Scriptable Objects/GameSetting")]
@@ -19,6 +20,8 @@ public class GameSetting : ScriptableObject
     private Vector2 backgroundPosition = new(0,0);
     private MonsterSpawner spawner = new();
     private List<Item> itemsOnGround = new();
+    public List<Vector2> monsterPlace = new();
+    public List<Vector2> itemPlace = new();
     public string PlayerName { get => playerName; set => playerName = value; }
     public int RoundNum { get => roundNum; set => roundNum = value; }
     public int DiffInt { get => difficulty; set => difficulty = value; }

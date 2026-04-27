@@ -730,7 +730,7 @@ MonoBehaviour:
   WeaponLevel: {fileID: 1957703854930522335, guid: 15097587b9a422647a491a9161a1ae3c, type: 3}
   Whiskey: {fileID: -2536734197558852746, guid: 42e8f4d938f59b84c9ee0d4a6c3af8b7, type: 3}
   WipeEnemies: {fileID: 5175462798709564287, guid: c8cd1b36e6ee5f94c9c0bbc0a7bf9c49, type: 3}
-  AngelBlessing: {fileID: 3540305616991046999, guid: 55e0e628f3f1a1041931180f1cfdf7ed, type: 3}
+  AngelBlade: {fileID: 2897725282250686821, guid: 17d4269e4dc5def459bbd438eaf4862e, type: 3}
   Book: {fileID: 1867291767929053637, guid: ee2adaf0e0cf4dc4094d866b23bc6e4a, type: 3}
   Flamethrower: {fileID: -6876162129857792578, guid: fad96ab05963b7740b7eafc34a8f34f0, type: 3}
   Machete: {fileID: 199127150680332587, guid: 52521631fa96d9c48a6709222a3122d4, type: 3}
@@ -769,10 +769,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.9619976, y: 0.9619976, z: 0.9619976}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2016922793}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &180947564
 GameObject:
@@ -3344,7 +3344,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1047943953}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -2}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4257,13 +4257,13 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2128074728}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
+      - m_Target: {fileID: 2128074735}
+        m_TargetAssemblyTypeName: BuyMenu, Assembly-CSharp
+        m_MethodName: OnBuy
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -4831,7 +4831,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -75, y: -150}
+  m_AnchoredPosition: {x: -90, y: -150}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1594075735
@@ -5977,7 +5977,6 @@ RectTransform:
   - {fileID: 180947565}
   - {fileID: 1452473014}
   - {fileID: 730587250}
-  - {fileID: 176927128}
   m_Father: {fileID: 1163268794}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -6120,13 +6119,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   price: 000000000000000000000000000000000000000000000000
-  rects:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -6136,3 +6128,4 @@ SceneRoots:
   - {fileID: 121991645}
   - {fileID: 479698188}
   - {fileID: 1594075738}
+  - {fileID: 176927128}

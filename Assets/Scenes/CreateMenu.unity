@@ -7128,7 +7128,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1744178986}
         m_TargetAssemblyTypeName: CreateMenuBehaviour, Assembly-CSharp
-        m_MethodName: CreateNewGame
+        m_MethodName: LoadGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -8829,7 +8829,7 @@ MonoBehaviour:
   WeaponLevel: {fileID: 0}
   Whiskey: {fileID: 0}
   WipeEnemies: {fileID: 0}
-  AngelBlessing: {fileID: 3540305616991046999, guid: 55e0e628f3f1a1041931180f1cfdf7ed, type: 3}
+  AngelBlade: {fileID: 2897725282250686821, guid: 17d4269e4dc5def459bbd438eaf4862e, type: 3}
   Book: {fileID: 1867291767929053637, guid: ee2adaf0e0cf4dc4094d866b23bc6e4a, type: 3}
   Flamethrower: {fileID: -6876162129857792578, guid: fad96ab05963b7740b7eafc34a8f34f0, type: 3}
   Machete: {fileID: 199127150680332587, guid: 52521631fa96d9c48a6709222a3122d4, type: 3}

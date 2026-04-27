@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using UnityEngine.Events;
 
@@ -46,12 +47,19 @@ public class HunterBase : Mob
     }
     public void AddHP(int amount)
     {
-        if (HP + amount > maxHitPoints) HP = maxHitPoints;
-        else HP += amount;
+        if (amount > 0)
+        {
+            amount += amount * (currentItem.Quality / 100);
+            if (HP + amount > maxHitPoints) HP = maxHitPoints;
+            else HP += amount;
+        }
+        else TakeDamage(-amount);
     }
     public void AddAttack(int amount)
     {
+        amount += amount * (currentItem.Quality / 100);
         attack += amount;
+        weapon.SetDamage(attack);
     }
     public void AddXP(int xp)
     {
@@ -100,7 +108,7 @@ public class HunterBase : Mob
     public void SwitchForward()
     {
         int invCount = inventory.GetItems().Count;
-        if (inventory.GetItems().Count > 1)
+        if (invCount > 1)
         {
             int index = inventory.GetPosition(currentItem);
             if (index < invCount - 1) currentItem = inventory.GetItems()[index + 1];
@@ -137,13 +145,26 @@ public class HunterBase : Mob
         }
         currentItem.Sprite = currentItem.GetSprite();
     }
+    public void SelectCurrentItem()
+    {
+        for (int i = 0; i < inventory.GetItems().Count; i++)
+        {
+            if (inventory.GetItems()[i].GetType() == typeof(WeaponBase))
+            {
+                currentItem = inventory.GetItems()[i];
+                SwitchWeapon((WeaponBase)currentItem);
+            }
+        }
+        currentItem ??= inventory.GetItems()[0];
+        currentItem.Sprite = currentItem.GetSprite();
+    }
     public void SwitchWeapon(WeaponBase weapon)
     {
-        if (currentItem == null || !HasItem(weapon))
+        if (currentItem == null || !HasItem(weapon) || currentItem.GetType() != typeof(WeaponBase))
             return;
         switch (weapon.ItemType)
         {
-            case ItemType.AngelBlessing: weapon.SetProjectile(); break;
+            case ItemType.AngelBlade: weapon.SetProjectile(); break;
             case ItemType.Book: weapon.SetProjectile();  break;
             case ItemType.Flamethrower: weapon.SetProjectile();  break;
             case ItemType.Machete: weapon.SetProjectile();  break;
@@ -158,19 +179,19 @@ public class HunterBase : Mob
             return;
         switch (currentItem.ItemType)
         {
-            case ItemType.AmmoBundle: AddAttack(60); break;
+            case ItemType.AmmoBundle: AddAttack(50); AddHP(-10); break;
             case ItemType.Bandage: AddHP(60); break;
-            case ItemType.Beer: AddHP(-10); AddAttack(30); break;
-            case ItemType.Burger: AddHP(40); AddAttack(-10); break;
-            case ItemType.Cocktail: AddHP(30); AddAttack(30); break;
-            case ItemType.MagicCircle: AddAttack(40); break;
-            case ItemType.Pie: AddHP(20); AddAttack(40); break;
+            case ItemType.Beer: AddHP(20); AddAttack(30); break;
+            case ItemType.Burger: AddHP(10); AddAttack(40); break;
+            case ItemType.Cocktail: AddHP(30); AddAttack(20); break;
+            case ItemType.MagicCircle: AddAttack(40); AddHP(-20); break;
+            case ItemType.Pie: AddHP(25); AddAttack(25); break;
             case ItemType.Potion: AddAttack(-40); AddHP(-40); break;
             case ItemType.Salad: AddHP(40); AddAttack(10); break;
-            case ItemType.Shield: AddHP(40); break;
+            case ItemType.Shield: AddHP(50); break;
             case ItemType.WeaponLevel: weapon.Level += 1; break;
-            case ItemType.Whiskey: AddAttack(40); AddHP(-20); break;
-            case ItemType.WipeEnemies: /*event*/ break;
+            case ItemType.Whiskey: AddAttack(40); AddHP(20); break;
+            case ItemType.WipeEnemies: AddAttack(-20); AddHP(-50); break;
             default: break;
         }
     }

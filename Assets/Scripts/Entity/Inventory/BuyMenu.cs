@@ -1,7 +1,9 @@
+using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class BuyMenu : MonoBehaviour
 {
@@ -9,7 +11,8 @@ public class BuyMenu : MonoBehaviour
     private Transform itemSlotTemplate;
     public Item[] items = new Item[6];
     public int[] price = new int[6];
-    public RectTransform[] rects = new RectTransform[6];
+    public static UnityEvent<int> ButtonClick = new();
+    private GameObject selected;
 
     private void Awake()
     {
@@ -20,7 +23,7 @@ public class BuyMenu : MonoBehaviour
     {
         for (int i=0; i < 6; i++)
         {
-            items[i] = (int)(Random.value * 9) switch
+            items[i] = (int)(UnityEngine.Random.value * 9) switch
             {
                 0 => new Item(ItemType.Bandage),
                 1 => new Item(ItemType.Beer),
@@ -32,7 +35,7 @@ public class BuyMenu : MonoBehaviour
                 7 => new Item(ItemType.Whiskey),
                 _ => new Item(ItemType.Shield)
             };
-            price[i] = ((int)(Random.value * 100) * level * diff)+50;
+            price[i] = ((int)(UnityEngine.Random.value * 50) * level * diff)+50;
         }
         RefreshInventory();
     }
@@ -53,12 +56,20 @@ public class BuyMenu : MonoBehaviour
             bu.name = $"{i}";
             TMP_Text priceText = bu.GetComponentInChildren<TMP_Text>();
             priceText.text = $"${price[i]}";
-            rects[i] = itemSlot;
         }
     }
-    public Item OnBuy()
+    public void OnBuy()
     {
-        RectTransform itemSlot = EventSystem.current.currentSelectedGameObject.GetComponent<RectTransform>();
-        return items[int.Parse(itemSlot.name)];
+        GameObject itemSlot = EventSystem.current.currentSelectedGameObject;
+        selected = itemSlot;
+        ButtonClick.Invoke(Convert.ToInt32(itemSlot.name));
+    }
+    public void Disable()
+    {
+        Button itemSlotButton = selected.GetComponent<Button>();
+        itemSlotButton.interactable = false;
+        itemSlotButton.enabled = false;
+        itemSlotButton.colors = new ColorBlock();
+        itemSlotButton.GetComponentInChildren<TMP_Text>().text = "Sold";
     }
 }

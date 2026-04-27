@@ -21,7 +21,7 @@ public enum ItemType
     MovementSpeed,
     WeaponLevel,
     // weapons
-    AngelBlessing,
+    AngelBlade,
     Book,
     Flamethrower,
     Machete,
@@ -63,7 +63,7 @@ public class Item
             ItemType.Whiskey => ItemAssets.Instance.Whiskey,
             ItemType.WipeEnemies => ItemAssets.Instance.WipeEnemies,
 
-            ItemType.AngelBlessing => ItemAssets.Instance.AngelBlessing,
+            ItemType.AngelBlade => ItemAssets.Instance.AngelBlade,
             ItemType.Book => ItemAssets.Instance.Book,
             ItemType.Flamethrower => ItemAssets.Instance.Flamethrower,
             ItemType.Machete => ItemAssets.Instance.Machete,

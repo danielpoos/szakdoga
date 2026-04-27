@@ -12,25 +12,21 @@ public class ProjectileBase
     protected ProjectileType projectileType;
     protected Sprite sprite;
     protected int damage = 20;
-    protected float range = 100;
     protected float movementSpeed = 120f;
-    // no need ???
-    protected Vector2 position;
     protected Vector2 destination;
-    protected Quaternion rotation;
-    // ^^
     public int Damage { get => damage; set => damage = value; }
-    public float Range { get => range; set => range = value; }
     public float MovementSpeed { get => movementSpeed; set => movementSpeed = value; }
-    public Vector2 Position { get => position; set => position = value; }
     public Vector2 Destination { get => destination; set => destination = value; }
-    public Quaternion Rotation { get => rotation; set => rotation = value; }
     public Sprite Sprite { get => sprite; set => sprite = value; }
 
     public ProjectileBase(ProjectileType projectileType)
     {
         this.projectileType = projectileType;
         this.sprite = GetSprite();
+    }
+    public void SetDamage(int amount)
+    {
+        damage = amount;
     }
     public Sprite GetSprite()
     {

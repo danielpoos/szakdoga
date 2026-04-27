@@ -53,6 +53,7 @@ public class GameSceneBehaviour : MonoBehaviour
     private List<ProjectileObject> projectiles = new();
     private UnityAction<MonsterObject> MonsterDeadAction;
     private UnityAction PlayerDeadAction;
+    private UnityAction<int> ButtonClickAction;
 
     private bool isStatShown = false;
     private bool isRoundShown = false;
@@ -64,8 +65,8 @@ public class GameSceneBehaviour : MonoBehaviour
     private void Awake()
     {
         Player p = Instantiate(playerObject, playgroundObject.transform);
-        gameSetting.Player = p;
         p.Hunter = gameSetting.Hunter;
+        gameSetting.Player = p;
         p.transform.position = gameSetting.PlayerPosition;
         p.gameObject.SetActive(true);
         playerObject.gameObject.SetActive(false);
@@ -83,11 +84,13 @@ public class GameSceneBehaviour : MonoBehaviour
             gameSetting.PlayerPosition = new(0, 0);
             gameSetting.Spawner.ClearMonsters();
             gameSetting.ItemsOnGround.Clear();
+            gameSetting.SaveFileName = "";
         }
         else if (gameSetting.IsLoadedGame)
         {
             gameSetting.Spawner.ClearMonsters();
             gameSetting.ItemsOnGround.Clear();
+            UpdateTexts();
         }
         else
         {
@@ -99,6 +102,7 @@ public class GameSceneBehaviour : MonoBehaviour
     void Start()
     {
         HandleSceneChange();
+        gameSetting.Player.Hunter.SelectCurrentItem();
         heldItemSpriteRenderer.sprite = gameSetting.Player.Hunter.CurrentItem.Sprite;
         backgroundMat.mainTextureOffset = gameSetting.Player.Hunter.position;
     }
@@ -143,8 +147,8 @@ public class GameSceneBehaviour : MonoBehaviour
         heldItemSpriteRenderer.sprite = gameSetting.Player.Hunter.Weapon.GetSprite();
         spawnTime = gameSetting.DiffInt switch
         {
-            1=> 3.5f,
-            2=> 2,
+            1=> 4,
+            2=> 3,
             _=> 5,
         };
         inventoryLine.SetInventory(gameSetting.Player.Hunter.Inventory);
@@ -184,48 +188,39 @@ public class GameSceneBehaviour : MonoBehaviour
     }
     private void LoadScene()
     {
-        string valami = "";
-        foreach (MonsterBase m in gameSetting.Spawner.Monsters)
+        gameSetting.Player.Hunter.SetWeapon();
+        for (int m = 0; m < gameSetting.Spawner.Monsters.Count;m++)
         {
             MonsterObject mo = MonsterObject.Instantiate(monsterGameObject, playgroundObject.transform);
             mo.gameObject.SetActive(true);
-            mo.transform.position = m.position;
-            mo.SetMonster(m);
-            mo.ChangeSprite(m.Sprite);
+            mo.transform.position = gameSetting.monsterPlace[m];
+            mo.SetMonster(gameSetting.Spawner.Monsters[m]);
+            mo.ChangeSprite(gameSetting.Spawner.Monsters[m].Sprite);
             enemyObjects.Add(mo);
-            valami += $"{m.position}={mo.Monster.position} ";
         }
-        valami += "\n";
-        foreach (Item i in gameSetting.ItemsOnGround)
+        for (int i= 0; i< gameSetting.ItemsOnGround.Count;i++)
         {
             ItemOnGround it = ItemOnGround.Instantiate(droppedItemGameObject, playgroundObject.transform);
             it.gameObject.SetActive(true);
-            it.transform.position = i.position;
-            it.SetItem(i);
-            it.ChangeSprite(i.Sprite);
+            it.transform.position = gameSetting.itemPlace[i];
+            it.SetItem(gameSetting.ItemsOnGround[i]);
+            it.ChangeSprite(gameSetting.ItemsOnGround[i].Sprite);
             droppedItemObjects.Add(it);
-            valami += $"{i.position}={it.Item.position} ";
         }
-        File.WriteAllText("asd.txt", valami);
     }
     private void SaveScene()
     {
         gameSetting.Hunter = gameSetting.Player.Hunter;
-        gameSetting.Spawner.Monsters.Clear();
-        gameSetting.ItemsOnGround.Clear();
-        string a = "";
+        gameSetting.monsterPlace.Clear();
+        gameSetting.itemPlace.Clear();
         foreach (MonsterObject mon in enemyObjects)
         {
-            gameSetting.Spawner.Monsters.Add(mon.Monster);
-            a += mon.Monster.position;
+            gameSetting.monsterPlace.Add(mon.transform.position);
         }
-        a += "\n";
         foreach (ItemOnGround item in droppedItemObjects)
         {
-            gameSetting.ItemsOnGround.Add(item.Item);
-            a += item.Item.position;
+            gameSetting.itemPlace.Add(item.transform.position);
         }
-        File.WriteAllText("a.txt", a);
     }
     private void UpdateObjects()
     {
@@ -283,16 +278,17 @@ public class GameSceneBehaviour : MonoBehaviour
                 isBuyMenuShown = false;
                 HideBuyMenu();
             }
-            else Pause();
+            else {
+                SaveScene();
+                Pause();
+            }
         }
         if (Input.GetKey(KeyCode.Q))
         {
-            Debug.Log(gameSetting.Player.Hunter.CurrentItem);
             SwitchItem(true);
         }
         if (Input.GetKey(KeyCode.E))
         {
-            Debug.Log(gameSetting.Player.Hunter.CurrentItem);
             SwitchItem(false);
         }
         if (Input.GetKey(KeyCode.T))
@@ -307,15 +303,15 @@ public class GameSceneBehaviour : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.R))
         {
-            if (isStatShown) HideStats();
-            else ShowStats();
+            if (isStatShown) statObject.SetActive(false);
+            else statObject.SetActive(true);
             isStatShown = !isStatShown;
         }
     }
-    private void SwitchItem(bool forward)
+    private void SwitchItem(bool backward)
     {
-        if (forward) gameSetting.Player.Hunter.SwitchForward();
-        else gameSetting.Player.Hunter.SwitchBackward();
+        if (backward) gameSetting.Player.Hunter.SwitchBackward();
+        else gameSetting.Player.Hunter.SwitchForward();
         heldItemSpriteRenderer.sprite = gameSetting.Player.Hunter.CurrentItem.Sprite;
     }
     #endregion
@@ -502,7 +498,7 @@ public class GameSceneBehaviour : MonoBehaviour
         m.gameObject.SetActive(true);
         m.transform.position = startPosition;
         m.SetMonster(newMonster);
-        m.Monster.LevelUpMonster(gameSetting.Player.Hunter.Level);
+        m.Monster.LevelUpMonster(gameSetting.Player.Hunter.Level, gameSetting.Difficulty);
         m.ChangeSprite(newMonster.Sprite);
         enemyObjects.Add(m);
     }
@@ -558,47 +554,38 @@ public class GameSceneBehaviour : MonoBehaviour
         gameSetting.Player.Hunter.CanGoNextRound = elapsedAdvanceToNextRoundTime > 30 || gameSetting.Player.Hunter.CanGoNextRound;
         if (gameSetting.IsNewGame || gameSetting.IsLoadedGame)
         {
+            uiCanvasGroup.interactable = false;
             TriggerNextRound();
             gameSetting.IsNewGame = false;
             gameSetting.IsLoadedGame = false;
+            uiCanvasGroup.interactable = true;
         }
         else if (gameSetting.Player.Hunter.CanGoNextRound)
         {
+            uiCanvasGroup.interactable = false;
             TriggerNextRound();
             gameSetting.Player.Hunter.CanGoNextRound = false;
+            elapsedAdvanceToNextRoundTime = 0;
+            uiCanvasGroup.interactable = true;
             ShowBuyMenu();
         }
         else if (gameSetting.IsPaused)
         {
             gameSetting.IsPaused = false;
+            elapsedAdvanceToNextRoundTime = 0;
         }
     }
     private void ShowBuyMenu()
     {
-        //stackoverflow
         isBuyMenuShown = true;
         buyMenuCanvas.enabled = true;
         buyMenuCanvas.gameObject.SetActive(true);
         buyMenuCanvas.GenerateItems(gameSetting.Player.Hunter.Level, gameSetting.DiffInt+1);
-        for (int i = 0; i < 6; i++)
-        {
-            buyMenuCanvas.transform.Find("ItemSlot").Find(i.ToString()).GetComponent<Button>().onClick.AddListener(delegate { BuyMenuButtonClicked(i); });
-        }
+        ButtonClickAction += AddItemToHunter;
+        BuyMenu.ButtonClick.AddListener(ButtonClickAction);
         playgroundObject.SetActive(false);
         uiCanvasGroup.interactable = false;
     }
-
-    private void BuyMenuButtonClicked(int i)
-    {
-            if (gameSetting.Player.Hunter.HasEnoughMoney(buyMenuCanvas.price[i])) {gameSetting.Player.Hunter.Inventory.AddItem(buyMenuCanvas.items[i]); gameSetting.Player.Hunter.Money -= buyMenuCanvas.price[i]; }
-        // () => { 
-        //    else
-        //    {
-
-        //    }
-        //};
-    }
-
     private void HideBuyMenu()
     {
         isBuyMenuShown = false;
@@ -606,14 +593,18 @@ public class GameSceneBehaviour : MonoBehaviour
         buyMenuCanvas.gameObject.SetActive(false);
         playgroundObject.SetActive(true);
         uiCanvasGroup.interactable = true;
+        BuyMenu.ButtonClick.RemoveAllListeners();
     }
-    private void ShowStats()
+    public void AddItemToHunter(int i)
     {
-        statObject.SetActive(true);
-    }
-    private void HideStats()
-    {
-        statObject.SetActive(false);
+        if(gameSetting.Player.Hunter.HasEnoughMoney(buyMenuCanvas.price[i])){
+            gameSetting.Player.AddToInventory(buyMenuCanvas.items[i]);
+            gameSetting.Player.Hunter.AddMoney(-buyMenuCanvas.price[i]);
+            buyMenuCanvas.Disable();
+            ButtonClickAction -= AddItemToHunter;
+            try { BuyMenu.ButtonClick.RemoveListener(ButtonClickAction); }
+            catch (Exception) { }
+        }
     }
     #endregion
     #region Collision
@@ -621,15 +612,26 @@ public class GameSceneBehaviour : MonoBehaviour
     {
         gameSetting.Spawner.Monsters.Remove(monster.Monster);
         enemyObjects.Remove(monster);
-        gameSetting.Player.Hunter.IncreaseScore(100);
-        gameSetting.Player.Hunter.AddXP(20);
-        gameSetting.Player.Hunter.AddMoney(50);
+        switch (gameSetting.Difficulty ) {
+            case Difficulty.Normal:
+                gameSetting.Player.Hunter.IncreaseScore(100);
+                gameSetting.Player.Hunter.AddMoney(75);
+                break;
+            case Difficulty.Hard:
+                gameSetting.Player.Hunter.IncreaseScore(200);
+                gameSetting.Player.Hunter.AddMoney(50);
+                break;
+            default:
+                gameSetting.Player.Hunter.IncreaseScore(50);
+                gameSetting.Player.Hunter.AddMoney(100);
+                break;
+        }
+        gameSetting.Player.Hunter.AddXP(monster.Monster.XP);
         DropItemOnGround(monster.Monster.ItemDrop, monster.transform.position);
         Destroy(monster);
     }
     private void EndGame()
     {
-        SaveScene();
         float waitASecond = 0f;
         while (waitASecond < .5f) waitASecond += Time.deltaTime;
         SceneManager.LoadScene("EndScene", LoadSceneMode.Single);

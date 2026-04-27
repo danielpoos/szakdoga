@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using TMPro;
@@ -105,7 +106,13 @@ public class CreateMenuBehaviour : MonoBehaviour
     private void SetGameData()
     {
         gameSetting = FileMethods.LoadGame(selectedFileName, gameSetting);
-        gameSetting.SaveFileName = selectedFileName;
+        try {
+            gameSetting.SaveFileName = selectedFileName;
+        } catch (Exception) { }
+        try
+        {
+            gameSetting.Player.Hunter = gameSetting.Hunter;
+        } catch (Exception) { }
     }
     public void GetSavedGameData()
     {
@@ -128,6 +135,7 @@ public class CreateMenuBehaviour : MonoBehaviour
     }
     public void LoadGame()
     {
+        Debug.Log(gameSetting.SaveFileName +" "+ selectedFileName +" "+ gameSetting.PlayerName);
         if (selectedFileName == "" || gameSetting.PlayerName == "")
         {
             return;

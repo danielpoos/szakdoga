@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class InventoryExtended : MonoBehaviour, IDropHandler
+public class InventoryExtended : MonoBehaviour
 {
     private Inventory inventory;
     private Transform itemContainer;
@@ -45,13 +45,6 @@ public class InventoryExtended : MonoBehaviour, IDropHandler
                 x = 0;
                 y++;
             }
-        }
-    }
-    public void OnDrop(PointerEventData eventData)
-    {
-        if (eventData.pointerDrag != null)
-        {
-            eventData.pointerDrag.GetComponent<RectTransform>().anchoredPosition = itemContainer.GetComponentInChildren<RectTransform>().anchoredPosition;
         }
     }
 }

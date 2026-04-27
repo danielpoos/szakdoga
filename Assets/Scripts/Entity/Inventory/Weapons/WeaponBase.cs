@@ -18,11 +18,15 @@ public class WeaponBase : Item
         this.level = level;
         Sprite = GetSprite();
     }
+    public void SetDamage(int damage)
+    {
+        projectile.SetDamage((int)(damage * (quality + level / 100.0)));
+    }
     public void SetProjectile()
     {
         switch (ItemType)
         {
-            case ItemType.AngelBlessing: projectile = new ProjectileBase(ProjectileType.AngelLight); break;
+            case ItemType.AngelBlade: projectile = new ProjectileBase(ProjectileType.AngelLight); break;
             case ItemType.Book: projectile = new ProjectileBase(ProjectileType.Spell); break;
             case ItemType.Flamethrower: projectile = new ProjectileBase(ProjectileType.Fire); break;
             case ItemType.Machete: projectile = new ProjectileBase(ProjectileType.Slash); break;

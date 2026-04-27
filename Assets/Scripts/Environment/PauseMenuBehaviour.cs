@@ -7,8 +7,7 @@ public class PauseMenuBehaviour : MonoBehaviour
 {
     [SerializeField] private GameSetting gameSetting;
 
-    [SerializeField] private InventoryExtended inventoryExtended;
-    [SerializeField] private CraftObject craftingArea;
+    [SerializeField] private CraftObject craftArea;
     [SerializeField] private GameObject newItem;
 
     [SerializeField] private GameObject saveGameBackground;
@@ -24,7 +23,7 @@ public class PauseMenuBehaviour : MonoBehaviour
         areYouSureObject.SetActive(false);
         saveGameMenu.SetActive(false);
         errorText.text = "";
-        inventoryExtended.SetInventory(gameSetting.Hunter.Inventory);
+        craftArea.Inventory = gameSetting.Hunter.Inventory;
     }
     private void Start()
     {
@@ -34,10 +33,16 @@ public class PauseMenuBehaviour : MonoBehaviour
     {
         if (Input.anyKeyDown) OnKeyDown();
     }
+    private bool CanBeUsedAsFileName(string name)
+    {
+        return !(name.Contains('\\') || name.Contains('/') || name.Contains(':') || name.Contains('*') || name.Contains('?')
+            || name.Contains('<') || name.Contains('>') || name.Contains('|') || name.Contains('\"') || name.Contains(' '));
+    }
     private void OnNameInputEditEnded(string text)
     {
         saveFileName = text;
         if (saveFileName == "") errorText.text = "File name required!";
+        else if (!CanBeUsedAsFileName(saveFileName)) errorText.text = "There are forbidden characters in the filename!";
         else errorText.text = "";
     }
     private void OnKeyDown()
@@ -78,13 +83,9 @@ public class PauseMenuBehaviour : MonoBehaviour
     }
     public void LoadGame()
     {
-        if (saveFileName == "")
-        {
-            saveGameBackground.SetActive(true);
-            areYouSureObject.SetActive(true);
-            saveGameMenu.SetActive(false);
-        }
-        else ConfirmLoadGame();
+        saveGameBackground.SetActive(true);
+        areYouSureObject.SetActive(true);
+        saveGameMenu.SetActive(false);
     }
     public void ConfirmLoadGame()
     {
@@ -103,13 +104,19 @@ public class PauseMenuBehaviour : MonoBehaviour
     }
     public void ConfirmSaveGame()
     {
-        if (saveFileName == "")
+        if (gameSetting.SaveFileName == "")
         {
-            errorText.text = "File name required!";
-            return;
+            if (saveFileName == ""){
+                errorText.text = "File name required!";
+                return;
+            }
+            else if (!CanBeUsedAsFileName(saveFileName)) { 
+                errorText.text = "There are forbidden characters in the filename!";
+                return;
+            }
+            if (Path.GetExtension(saveFileName) == "hex") gameSetting.SaveFileName = saveFileName;
+            else gameSetting.SaveFileName = saveFileName + ".hex";
         }
-        if (Path.GetExtension(saveFileName) == "hex") gameSetting.SaveFileName = saveFileName;
-        else gameSetting.SaveFileName = saveFileName+".hex";
         FileMethods.SaveGame(gameSetting);
         HideSaveGame();
     }

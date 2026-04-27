@@ -14,11 +14,26 @@ public class MonsterBase : Mob
         attack = 10;
         movementSpeed = 50f;
     }
-    public void LevelUpMonster(int level)
+    public void LevelUpMonster(int level, Difficulty diff)
     {
-        experience = level * 15;
-        maxHitPoints = hitPoints += level*100;
-        attack += (int)(level * .3f);
+        switch (diff)
+        {
+            case Difficulty.Normal:
+                experience = level * ((int)diff + 1) + 25;
+                maxHitPoints = hitPoints = level*120;
+                attack += (int)(level * .5f);
+                break;
+            case Difficulty.Hard:
+                experience = level * ((int)diff + 1) + 15;
+                maxHitPoints = hitPoints = level*150;
+                attack += (int)(level * 1f);
+                break;
+            default:
+                experience = level * ((int)diff + 1) + 50;
+                maxHitPoints = hitPoints = level*100;
+                attack += (int)(level * .3f);
+                break;
+        }
     }
     //give exp, item drop to player
     public virtual Item OnDeath() { return itemDrop; }
@@ -27,27 +42,25 @@ public class MonsterBase : Mob
     {
         itemDrop = this switch
         {
-            Angel => new Item(ItemType.AmmoBundle),
-            Demon => new Item(ItemType.Cocktail),
-            Leviathan => new Item(ItemType.MagicCircle),
-            Shapeshifter => new Item(ItemType.Shield),
-            Vampire => new Item(ItemType.WeaponLevel),
-            Werewolf => new Item(ItemType.WipeEnemies),
-            _=>new Item(ItemType.Pie)
-            //ItemType.AmmoBundle => ItemAssets.Instance.AmmoBundle,
-            //ItemType.Bandage => ItemAssets.Instance.Bandage,
-            //ItemType.Beer => ItemAssets.Instance.Beer,
-            //ItemType.Burger => ItemAssets.Instance.Burger,
-            //ItemType.Cocktail => ItemAssets.Instance.Cocktail,
-            //ItemType.MagicCircle => ItemAssets.Instance.MagicCircle,
-            //ItemType.Pie => ItemAssets.Instance.Pie,
-            //ItemType.Potion => ItemAssets.Instance.Potion,
-            //ItemType.Salad => ItemAssets.Instance.Salad,
-            //ItemType.Shield => ItemAssets.Instance.Shield,
-            //ItemType.WeaponLevel => ItemAssets.Instance.WeaponLevel,
-            //ItemType.Whiskey => ItemAssets.Instance.Whiskey,
-            //ItemType.WipeEnemies => ItemAssets.Instance.WipeEnemies,
+            Angel => GetRandomDrop(),
+            Demon => GetRandomDrop(),
+            Leviathan => GetRandomDrop(),
+            Shapeshifter => GetRandomDrop(),
+            Vampire => GetRandomDrop(),
+            Werewolf => GetRandomDrop(),
+            _=>null
         };
     }
-
+    private Item GetRandomDrop()
+    {
+        return (int)(UnityEngine.Random.value * 6) switch
+        {
+            1 => new Item(ItemType.AmmoBundle),
+            2 => new Item(ItemType.Potion),
+            3 => new Item(ItemType.MagicCircle),
+            4 => new Item(ItemType.Shield),
+            5 => new Item(ItemType.WeaponLevel),
+            _ => new Item(ItemType.WipeEnemies),
+        };
+    }
 }

@@ -22,7 +22,7 @@ public class ItemAssets : MonoBehaviour
     public Sprite Whiskey;
     public Sprite WipeEnemies;
     // weapon sprites
-    public Sprite AngelBlessing;
+    public Sprite AngelBlade;
     public Sprite Book;
     public Sprite Flamethrower;
     public Sprite Machete;
