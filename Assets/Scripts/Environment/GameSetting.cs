@@ -10,6 +10,8 @@ public class GameSetting : ScriptableObject
     private string leaderboardFileName = "leaderboard.hexdata";
     private int difficulty;
     private int roundNum = 0;
+    private int itemUsed = 0;
+    private int monsterSlayed = 0;
     private bool isPaused = false;
     private bool isNewGame = true;
     private bool isLoadedGame = false;
@@ -25,6 +27,8 @@ public class GameSetting : ScriptableObject
     public string PlayerName { get => playerName; set => playerName = value; }
     public int RoundNum { get => roundNum; set => roundNum = value; }
     public int DiffInt { get => difficulty; set => difficulty = value; }
+    public int ItemUsed { get => itemUsed; set => itemUsed = value; }
+    public int MonsterSlayed { get => monsterSlayed; set => monsterSlayed = value; }
     public bool IsPaused { get => isPaused; set => isPaused = value; }
     public bool IsNewGame { get => isNewGame; set => isNewGame = value; }
     public bool IsLoadedGame { get => isLoadedGame; set => isLoadedGame = value; }

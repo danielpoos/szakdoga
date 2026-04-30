@@ -34,4 +34,17 @@ public class WeaponBase : Item
             case ItemType.Shotgun: projectile = new ProjectileBase(ProjectileType.Bullet); break;
         }
     }
+    public void SetProjectile(int damage)
+    {
+        switch (ItemType)
+        {
+            case ItemType.AngelBlade: projectile = new ProjectileBase(ProjectileType.AngelLight); break;
+            case ItemType.Book: projectile = new ProjectileBase(ProjectileType.Spell); break;
+            case ItemType.Flamethrower: projectile = new ProjectileBase(ProjectileType.Fire); break;
+            case ItemType.Machete: projectile = new ProjectileBase(ProjectileType.Slash); break;
+            case ItemType.Pistol: projectile = new ProjectileBase(ProjectileType.Bullet); break;
+            case ItemType.Shotgun: projectile = new ProjectileBase(ProjectileType.Bullet); break;
+        }
+        projectile.Damage = (int)(damage * (quality + level / 100.0));
+    }
 }

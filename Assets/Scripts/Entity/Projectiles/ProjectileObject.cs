@@ -8,7 +8,6 @@ public class ProjectileObject : MonoBehaviour
     private BoxCollider2D boxCollider;
     private SpriteRenderer spriteRenderer;
     private bool isHit = false;
-    public UnityEvent ProjectileHit = new();
     public ProjectileBase Projectile { get => probase; set => probase = value; }
     public bool IsHit { get => isHit; set => isHit = value; }
 

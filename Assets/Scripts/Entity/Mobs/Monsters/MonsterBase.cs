@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class MonsterBase : Mob
@@ -20,23 +19,21 @@ public class MonsterBase : Mob
         {
             case Difficulty.Normal:
                 experience = level * ((int)diff + 1) + 25;
-                maxHitPoints = hitPoints = level*120;
-                attack += (int)(level * .5f);
+                maxHitPoints = hitPoints = (level + (int)diff + 1) * 120;
+                attack = level *  10;
                 break;
             case Difficulty.Hard:
                 experience = level * ((int)diff + 1) + 15;
-                maxHitPoints = hitPoints = level*150;
-                attack += (int)(level * 1f);
+                maxHitPoints = hitPoints = (level + (int)diff + 3) *150;
+                attack = level * 15;
                 break;
             default:
                 experience = level * ((int)diff + 1) + 50;
                 maxHitPoints = hitPoints = level*100;
-                attack += (int)(level * .3f);
+                attack = level * 5;
                 break;
         }
     }
-    //give exp, item drop to player
-    public virtual Item OnDeath() { return itemDrop; }
 
     public void SetItemDrop()
     {

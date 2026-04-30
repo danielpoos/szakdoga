@@ -55,6 +55,7 @@ public class Player : MonoBehaviour
         else if (other.gameObject.CompareTag("Item"))
         {
             AddToInventory(other.transform.GetComponent<ItemOnGround>().Item);
+            other.transform.GetComponent<ItemOnGround>().PickUpObject.RemoveAllListeners();
         }
     }
 }

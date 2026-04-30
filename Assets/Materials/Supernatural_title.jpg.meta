@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Supernatural_title_0: 6163794783312407625
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

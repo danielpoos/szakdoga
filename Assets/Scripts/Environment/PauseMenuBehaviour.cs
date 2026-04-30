@@ -7,22 +7,29 @@ public class PauseMenuBehaviour : MonoBehaviour
 {
     [SerializeField] private GameSetting gameSetting;
 
+    [SerializeField] private InventoryExtended inventoryExtended;
     [SerializeField] private CraftObject craftArea;
     [SerializeField] private GameObject newItem;
+    [SerializeField] private TMP_Text stats;
 
     [SerializeField] private GameObject saveGameBackground;
     [SerializeField] private GameObject areYouSureObject;
     [SerializeField] private GameObject saveGameMenu;
     [SerializeField] private TMP_InputField fileNameInput;
     [SerializeField] private TMP_Text errorText;
+    private CanvasGroup canvasGroup;
     private string saveFileName = "";
+    private bool showStats = false;
     private void Awake()
     {
         gameSetting.IsPaused = true;
         saveGameBackground.SetActive(false);
         areYouSureObject.SetActive(false);
         saveGameMenu.SetActive(false);
+        stats.gameObject.SetActive(showStats);
         errorText.text = "";
+        inventoryExtended.SetInventory(gameSetting.Player.Hunter.Inventory);
+        canvasGroup = inventoryExtended.GetComponent<CanvasGroup>();
         craftArea.Inventory = gameSetting.Hunter.Inventory;
     }
     private void Start()
@@ -49,33 +56,20 @@ public class PauseMenuBehaviour : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.Escape))
         {
-            if (saveGameMenu.activeInHierarchy || areYouSureObject.activeInHierarchy)
-            {
-                HideSaveGame();
-            }
-            else
-            {
-                BackToGame();
-            }
+            if (saveGameMenu.activeInHierarchy || areYouSureObject.activeInHierarchy) HideSaveGame();
+            else BackToGame();
+        }
+        if (Input.GetKey(KeyCode.R))
+        {
+            if (!saveGameBackground.activeInHierarchy) ToggleStats();
         }
     }
     // stat info popup
-    private bool HasEnoughMoney(int price)
+    private void ToggleStats()
     {
-        return gameSetting.Hunter.HasEnoughMoney(price);
-    }
-    public void MergeItems()
-    {
-        if (HasEnoughMoney(100)) { }
-        // check money
-    }
-    public void LevelUpWeapon()
-    {
-        // check money
-    }
-    public void DeleteItem()
-    {
-        // check money
+        stats.text = $"Difficulty: {gameSetting.Difficulty}\tRound: {gameSetting.RoundNum}\nItems used: {gameSetting.ItemUsed}\tMonsters slayed: {gameSetting.MonsterSlayed}";
+        showStats = !showStats;
+        stats.gameObject.SetActive(showStats);
     }
     public void BackToGame()
     {
@@ -86,6 +80,7 @@ public class PauseMenuBehaviour : MonoBehaviour
         saveGameBackground.SetActive(true);
         areYouSureObject.SetActive(true);
         saveGameMenu.SetActive(false);
+        canvasGroup.interactable = false;
     }
     public void ConfirmLoadGame()
     {
@@ -101,6 +96,7 @@ public class PauseMenuBehaviour : MonoBehaviour
         saveGameBackground.SetActive(true);
         saveGameMenu.SetActive(true);
         areYouSureObject.SetActive(false);
+        canvasGroup.interactable = false;
     }
     public void ConfirmSaveGame()
     {
@@ -125,5 +121,6 @@ public class PauseMenuBehaviour : MonoBehaviour
         saveGameBackground.SetActive(false);
         saveGameMenu.SetActive(false);
         areYouSureObject.SetActive(false);
+        canvasGroup.interactable = true;
     }
 }

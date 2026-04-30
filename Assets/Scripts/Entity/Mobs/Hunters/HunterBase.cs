@@ -1,5 +1,4 @@
-using System;
-using System.Diagnostics;
+using UnityEngine;
 using UnityEngine.Events;
 
 public class HunterBase : Mob
@@ -10,6 +9,7 @@ public class HunterBase : Mob
     private Item currentItem;
     private int money = 100;
     private int score = 0;
+    private int next = -1;
     private bool canGoNextRound = true;
     public UnityEvent LevelUpEvent = new();
     public WeaponBase Weapon { get => weapon; set => weapon = value; }
@@ -18,7 +18,9 @@ public class HunterBase : Mob
     public Difficulty Difficulty { get => difficulty; set => difficulty = value; }
     public int Money { get => money; set => money = value; }
     public int Score { get => score; set => score = value; }
+    public int Next { get => next; set => next = value; }
     public bool CanGoNextRound { get => canGoNextRound; set => canGoNextRound = value; }
+
     public HunterBase()
     {
         inventory = new Inventory();
@@ -28,15 +30,15 @@ public class HunterBase : Mob
         MaxHP = hitPoints = 100;
         attack = 20;
     }
-    public void BuyAttack()
-    {
-        attack += (int)(attack * 0.1f);
-    }
-    public void BuyHP()
-    {
-        maxHitPoints += 100;
-        hitPoints += 100;
-    }
+    //public void BuyAttack()
+    //{
+    //    attack += (int)(attack * 0.1f);
+    //}
+    //public void BuyHP()
+    //{
+    //    maxHitPoints += 100;
+    //    hitPoints += 100;
+    //}
     public void IncreaseLevel()
     {
         level += 1;
@@ -67,6 +69,8 @@ public class HunterBase : Mob
         if (xpAdded >= ExperienceForNextLevel())
         {
             experience = xpAdded - ExperienceForNextLevel();
+            weapon.SetDamage(attack);
+            weapon.SetProjectile(attack);
             LevelUpEvent.Invoke();
             canGoNextRound = true;
         }
@@ -87,10 +91,6 @@ public class HunterBase : Mob
     {
         score += amount;
     }
-    public void IncreaseMoney(int amount)
-    {
-        money += amount;
-    }
     public bool HasEnoughMoney(int price)
     {
         return money >= price;
@@ -99,7 +99,7 @@ public class HunterBase : Mob
     {
         if (!inventory.Contains(weapon)) inventory.AddItem(weapon);
         currentItem = weapon;
-        weapon.SetProjectile();
+        weapon.SetProjectile(attack);
     }
     private bool HasItem(Item item)
     {
@@ -110,9 +110,11 @@ public class HunterBase : Mob
         int invCount = inventory.GetItems().Count;
         if (invCount > 1)
         {
-            int index = inventory.GetPosition(currentItem);
-            if (index < invCount - 1) currentItem = inventory.GetItems()[index + 1];
-            else currentItem = inventory.GetItems()[0];
+            int index;
+            if (inventory.GetPosition(currentItem) < 0 && next != -1) index = next-1;
+            else index = inventory.GetPosition(currentItem);
+            if (index < invCount - 1) { currentItem = inventory.GetItems()[index + 1]; }
+            else { currentItem = inventory.GetItems()[0]; }
             if (currentItem.GetType() == typeof(WeaponBase))
             {
                 SwitchWeapon((WeaponBase)currentItem);
@@ -130,9 +132,12 @@ public class HunterBase : Mob
         int invCount = inventory.GetItems().Count;
         if (inventory.GetItems().Count > 1)
         {
-            int index = inventory.GetPosition(currentItem);
-            if (index > 0) currentItem = inventory.GetItems()[index - 1];
-            else currentItem = inventory.GetItems()[invCount - 1];
+
+            int index;
+            if (inventory.GetPosition(currentItem) < 0 && next != -1) index = next;
+            else index = inventory.GetPosition(currentItem);
+            if (index > 0) { currentItem = inventory.GetItems()[index - 1]; }
+            else { currentItem = inventory.GetItems()[invCount - 1]; }
             if (currentItem.GetType() == typeof(WeaponBase))
             {
                 SwitchWeapon((WeaponBase)currentItem);

@@ -18,6 +18,7 @@ public class BuyMenu : MonoBehaviour
     {
         itemContainer = transform.Find("Container");
         itemSlotTemplate = transform.Find("ItemSlot");
+        ButtonClick.RemoveAllListeners();
     }
     public void GenerateItems(int level, int diff)
     {
@@ -47,6 +48,7 @@ public class BuyMenu : MonoBehaviour
         }
         for (int i=0; i< items.Length; i++)
         {
+            ButtonClick.RemoveAllListeners();
             RectTransform itemSlot = Instantiate(itemSlotTemplate, itemContainer).GetComponent<RectTransform>();
             itemSlot.gameObject.SetActive(true);
             Transform renderer = itemSlot.Find("Renderer");

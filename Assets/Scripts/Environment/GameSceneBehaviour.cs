@@ -1,13 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class GameSceneBehaviour : MonoBehaviour
 {
@@ -80,14 +78,18 @@ public class GameSceneBehaviour : MonoBehaviour
         if (gameSetting.IsNewGame)
         {
             gameSetting.Timer = 0;
-            gameSetting.RoundNum = 0;
+            gameSetting.RoundNum = 1;
             gameSetting.PlayerPosition = new(0, 0);
             gameSetting.Spawner.ClearMonsters();
             gameSetting.ItemsOnGround.Clear();
             gameSetting.SaveFileName = "";
+            gameSetting.ItemUsed = 0;
+            gameSetting.MonsterSlayed = 0;
+            UpdateTexts();
         }
         else if (gameSetting.IsLoadedGame)
         {
+            gameSetting.Player.Hunter.SetWeapon();
             gameSetting.Spawner.ClearMonsters();
             gameSetting.ItemsOnGround.Clear();
             UpdateTexts();
@@ -203,8 +205,8 @@ public class GameSceneBehaviour : MonoBehaviour
             ItemOnGround it = ItemOnGround.Instantiate(droppedItemGameObject, playgroundObject.transform);
             it.gameObject.SetActive(true);
             it.transform.position = gameSetting.itemPlace[i];
-            it.SetItem(gameSetting.ItemsOnGround[i]);
             it.ChangeSprite(gameSetting.ItemsOnGround[i].Sprite);
+            it.SetItem(gameSetting.ItemsOnGround[i]);
             droppedItemObjects.Add(it);
         }
     }
@@ -242,6 +244,7 @@ public class GameSceneBehaviour : MonoBehaviour
                 {
                     i.gameObject.SetActive(false);
                     gameSetting.ItemsOnGround.Remove(i.Item);
+                    i.PickUpObject.RemoveAllListeners();
                     droppedItemObjects.Remove(i);
                 }
             }
@@ -279,7 +282,6 @@ public class GameSceneBehaviour : MonoBehaviour
                 HideBuyMenu();
             }
             else {
-                SaveScene();
                 Pause();
             }
         }
@@ -293,13 +295,10 @@ public class GameSceneBehaviour : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.T))
         {
-            isInventoryShown = !isInventoryShown;
-            inventoryExtended.enabled = isInventoryShown;
-            inventoryExtended.gameObject.SetActive(isInventoryShown);
-            inventoryLine.enabled = !isInventoryShown;
-            inventoryLine.gameObject.SetActive(!isInventoryShown);
-            inventoryLine.SetInventory(gameSetting.Player.Hunter.Inventory);
-            inventoryExtended.SetInventory(gameSetting.Player.Hunter.Inventory);
+            if (!isBuyMenuShown){
+                isInventoryShown = !isInventoryShown;
+                ToggleInventory(isInventoryShown);
+            }
         }
         if (Input.GetKey(KeyCode.R))
         {
@@ -307,6 +306,15 @@ public class GameSceneBehaviour : MonoBehaviour
             else statObject.SetActive(true);
             isStatShown = !isStatShown;
         }
+    }
+    private void ToggleInventory(bool on)
+    {
+        inventoryExtended.enabled = on;
+        inventoryExtended.gameObject.SetActive(on);
+        inventoryLine.enabled = !on;
+        inventoryLine.gameObject.SetActive(!on);
+        inventoryLine.SetInventory(gameSetting.Player.Hunter.Inventory);
+        inventoryExtended.SetInventory(gameSetting.Player.Hunter.Inventory);
     }
     private void SwitchItem(bool backward)
     {
@@ -320,7 +328,7 @@ public class GameSceneBehaviour : MonoBehaviour
     {
         gameSetting.BackgroundPosition = backgroundMat.mainTextureOffset;
         backgroundMat.mainTextureOffset += (gameSetting.Player.Hunter.MovementSpeed/20) * Time.deltaTime * gameSetting.Player.Hunter.position.normalized;
-        Vector2 movebg = -gameSetting.Player.Hunter.MovementSpeed * (3 / 4.0f) * Time.deltaTime * gameSetting.Player.Hunter.position.normalized;
+        Vector2 movebg = -gameSetting.Player.Hunter.MovementSpeed * (5 / 6.7f) * Time.deltaTime * gameSetting.Player.Hunter.position.normalized;
         foreach (ItemOnGround item in droppedItemObjects)
         {
             item.transform.Translate(movebg);
@@ -490,10 +498,16 @@ public class GameSceneBehaviour : MonoBehaviour
             startPosition = new(startX, startY);
         }
         //while (Math.Pow(startPosition.x - gameSetting.PlayerPosition.x, 2) + Math.Pow(startPosition.y - gameSetting.PlayerPosition.y, 2) > Math.Pow(50, 2));
-        while (Math.Abs(gameSetting.PlayerPosition.x - startPosition.x) < 100 && Math.Abs(gameSetting.PlayerPosition.y - startPosition.y) < 100);
+        while (Math.Abs(gameSetting.PlayerPosition.x - startPosition.x) < 100 || Math.Abs(gameSetting.PlayerPosition.y - startPosition.y) < 100);
 
         //set monster object
         MonsterBase newMonster = gameSetting.Spawner.SpawnMonster(startPosition);
+        newMonster.MovementSpeed *= gameSetting.Difficulty switch
+        {
+            Difficulty.Normal => 1.2f,
+            Difficulty.Hard => 1.5f,
+            _ => 1
+        };
         MonsterObject m = MonsterObject.Instantiate(monsterGameObject, playgroundObject.transform);
         m.gameObject.SetActive(true);
         m.transform.position = startPosition;
@@ -523,8 +537,9 @@ public class GameSceneBehaviour : MonoBehaviour
     {
         elapsedAdvanceToNextRoundTime = 0;
         gameSetting.Player.Hunter.CanGoNextRound = false;
-        gameSetting.RoundNum += 1;
-        if (gameSetting.RoundNum > 10) {
+        isInventoryShown = false;
+        ToggleInventory(isInventoryShown);
+        if (gameSetting.RoundNum > 9) {
             SaveScene();
             SceneManager.LoadScene("EndScene", LoadSceneMode.Single);
             return;
@@ -551,7 +566,7 @@ public class GameSceneBehaviour : MonoBehaviour
     }
     private void HandleSceneChange()
     {
-        gameSetting.Player.Hunter.CanGoNextRound = elapsedAdvanceToNextRoundTime > 30 || gameSetting.Player.Hunter.CanGoNextRound;
+        gameSetting.Player.Hunter.CanGoNextRound = elapsedAdvanceToNextRoundTime > 45 || gameSetting.Player.Hunter.CanGoNextRound;
         if (gameSetting.IsNewGame || gameSetting.IsLoadedGame)
         {
             uiCanvasGroup.interactable = false;
@@ -563,10 +578,12 @@ public class GameSceneBehaviour : MonoBehaviour
         else if (gameSetting.Player.Hunter.CanGoNextRound)
         {
             uiCanvasGroup.interactable = false;
+            gameSetting.RoundNum += 1;
             TriggerNextRound();
             gameSetting.Player.Hunter.CanGoNextRound = false;
             elapsedAdvanceToNextRoundTime = 0;
             uiCanvasGroup.interactable = true;
+            
             ShowBuyMenu();
         }
         else if (gameSetting.IsPaused)
@@ -593,6 +610,7 @@ public class GameSceneBehaviour : MonoBehaviour
         buyMenuCanvas.gameObject.SetActive(false);
         playgroundObject.SetActive(true);
         uiCanvasGroup.interactable = true;
+        ButtonClickAction -= AddItemToHunter;
         BuyMenu.ButtonClick.RemoveAllListeners();
     }
     public void AddItemToHunter(int i)
@@ -627,6 +645,7 @@ public class GameSceneBehaviour : MonoBehaviour
                 break;
         }
         gameSetting.Player.Hunter.AddXP(monster.Monster.XP);
+        gameSetting.MonsterSlayed++;
         DropItemOnGround(monster.Monster.ItemDrop, monster.transform.position);
         Destroy(monster);
     }
@@ -642,6 +661,7 @@ public class GameSceneBehaviour : MonoBehaviour
         if (gameSetting.Player.Hunter.CurrentItem.GetType() == typeof(WeaponBase))
         {
             ProjectileBase bullet = gameSetting.Player.GetProjectile();
+            bullet.SetDamage(gameSetting.Player.Hunter.Attack);
             Vector2 clickAbsPos = gameSetting.PlayerPosition - absolutePlayerPosition;
             bullet.Destination = new Vector2(clickPos.x + clickAbsPos.x, clickPos.y + clickAbsPos.y);
             Vector2 aha = -(gameSetting.PlayerPosition - bullet.Destination);
@@ -662,8 +682,11 @@ public class GameSceneBehaviour : MonoBehaviour
         {
             // use and remove from inventory
             gameSetting.Player.Hunter.UseItem();
+            gameSetting.Player.Hunter.Next = gameSetting.Player.Hunter.Inventory.GetItems().IndexOf(gameSetting.Player.Hunter.CurrentItem);
             gameSetting.Player.Hunter.Inventory.RemoveItem(gameSetting.Player.Hunter.CurrentItem);
+            gameSetting.ItemUsed++;
             SwitchItem(false);
+            gameSetting.Player.Hunter.Next = -1;
         }
     }
     #endregion

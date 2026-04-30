@@ -150,8 +150,6 @@ public class CraftObject : MonoBehaviour, IPointerClickHandler
             if (itemArray[i].GetType() == typeof(WeaponBase)) weaponCount++;
         }
         CheckForItems();
-        if (weaponCount > 0) ;
-        else if(weaponCount == 0);
     }
     private bool CheckForItems()
     {

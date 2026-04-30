@@ -9,12 +9,15 @@ public class EndSceneBehaviour : MonoBehaviour
     [SerializeField] private GameSetting gameSetting;
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private TMP_Text resultText;
+    [SerializeField] private TMP_Text rText;
     [SerializeField] private TMP_Text rankText;
     private bool isLeaderboardShown = false;
     private void Awake()
     {
         if (isLeaderboardShown) HideLeaderboard();
         resultText.text = $"Good job {gameSetting.PlayerName}!";
+        if (gameSetting.RoundNum <= 10 && !gameSetting.Player.Hunter.IsDead) rText.text = "You survived!";
+        else rText.text = "You died!";
         int rankNum = PlacePlayer();
         rankText.text = $"Your scored {gameSetting.Hunter.Score} and you are now ranked at number {rankNum} on the leaderboard.";
     }

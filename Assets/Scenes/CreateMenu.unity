@@ -1290,7 +1290,7 @@ RectTransform:
   - {fileID: 1578516891}
   - {fileID: 1224343502}
   - {fileID: 1441930023}
-  m_Father: {fileID: 472582291}
+  m_Father: {fileID: 1627511690}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -2017,6 +2017,7 @@ GameObject:
   - component: {fileID: 472582291}
   - component: {fileID: 472582293}
   - component: {fileID: 472582292}
+  - component: {fileID: 472582294}
   m_Layer: 5
   m_Name: LoadMenuPanel
   m_TagString: Untagged
@@ -2042,7 +2043,6 @@ RectTransform:
   - {fileID: 1013278870}
   - {fileID: 1693303950}
   - {fileID: 505307683}
-  - {fileID: 368956019}
   m_Father: {fileID: 1627511690}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2088,6 +2088,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 472582290}
   m_CullTransparentMesh: 1
+--- !u!225 &472582294
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472582290}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &505307682
 GameObject:
   m_ObjectHideFlags: 0
@@ -4508,7 +4520,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1051369012
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6780,6 +6792,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 472582291}
+  - {fileID: 368956019}
   m_Father: {fileID: 1744178987}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -7964,8 +7977,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1825968961}
   m_HandleRect: {fileID: 1825968960}
   m_Direction: 3
-  m_Value: 1
-  m_Size: 0.99999994
+  m_Value: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

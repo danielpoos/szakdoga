@@ -14,6 +14,8 @@ public class FileMethods
         split = lines[1].Split(',');
         gameSetting.DiffInt = int.Parse(split[0]);
         gameSetting.RoundNum = int.Parse(split[1]);
+        gameSetting.ItemUsed = int.Parse(split[2]);
+        gameSetting.MonsterSlayed = int.Parse(split[3]);
         split = lines[2].Split(',');
         gameSetting.Timer = float.Parse(split[0]);
         gameSetting.PlayerPosition = new Vector2(float.Parse(split[1]), float.Parse(split[2]));
@@ -60,14 +62,12 @@ public class FileMethods
         }
         return gameSetting; 
     }
-    public static bool SaveGame(GameSetting gameSetting)
+    public static void SaveGame(GameSetting gameSetting)
     {
-        bool isSaved = false;
         string saveFile = Path.Combine(Application.persistentDataPath, gameSetting.SaveFileName);
-        if (File.Exists(saveFile)) return isSaved;
         StringBuilder sb = new();
         sb.AppendLine(gameSetting.PlayerName);
-        sb.AppendLine(gameSetting.DiffInt.ToString()+ ","+gameSetting.RoundNum.ToString());
+        sb.AppendLine(gameSetting.DiffInt.ToString()+ ","+gameSetting.RoundNum.ToString()+","+gameSetting.ItemUsed.ToString()+ ","+gameSetting.MonsterSlayed.ToString());
         sb.AppendLine(gameSetting.Timer.ToString() + "," + gameSetting.PlayerPosition.x + "," + gameSetting.PlayerPosition.y);
         sb.AppendLine(gameSetting.Hunter.Level.ToString() + "," + gameSetting.Hunter.XP.ToString() + "," + gameSetting.Hunter.MaxHP.ToString() + "," 
             + gameSetting.Hunter.HP.ToString() + "," + gameSetting.Hunter.Attack.ToString() + "," + gameSetting.Hunter.Money.ToString() + "," + gameSetting.Hunter.Score.ToString() 
@@ -80,6 +80,5 @@ public class FileMethods
             else sb.AppendLine(((int)item.ItemType).ToString()+","+item.Quality.ToString()+","+item.Quantity.ToString());
         }
         File.WriteAllText(saveFile, sb.ToString());
-        return isSaved;
     }
 }

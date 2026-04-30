@@ -26,6 +26,7 @@ public class CreateMenuBehaviour : MonoBehaviour
     private void Awake()
     {
         gameSetting.Timer = 0;
+        gameSetting.DiffInt = 0;
         gameSetting.PlayerName = "";
         if (gameSetting.IsNewGame)
         {
@@ -50,7 +51,8 @@ public class CreateMenuBehaviour : MonoBehaviour
     }
     private void OnNameInputEditEnded(string text)
     {
-        gameSetting.PlayerName = text;
+        if (!text.Contains(' ')){ gameSetting.PlayerName = text; }
+        else { gameSetting.PlayerName = ""; }
     }
     public void SelectCharacter(GameObject go)
     {
@@ -93,6 +95,7 @@ public class CreateMenuBehaviour : MonoBehaviour
         {
             textObjects[^1].text = "Saved games found";
         }
+        loadCanvas.GetComponentInChildren<CanvasGroup>().interactable = false;
     }
     public void HideSavedGames()
     {
@@ -101,6 +104,7 @@ public class CreateMenuBehaviour : MonoBehaviour
         {
             fileNameText.text = selectedFileName;
         }
+        loadCanvas.GetComponentInChildren<CanvasGroup>().interactable = true;
         SetGameData();
     }
     private void SetGameData()
@@ -135,7 +139,6 @@ public class CreateMenuBehaviour : MonoBehaviour
     }
     public void LoadGame()
     {
-        Debug.Log(gameSetting.SaveFileName +" "+ selectedFileName +" "+ gameSetting.PlayerName);
         if (selectedFileName == "" || gameSetting.PlayerName == "")
         {
             return;

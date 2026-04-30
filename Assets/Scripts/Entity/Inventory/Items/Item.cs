@@ -13,13 +13,9 @@ public enum ItemType
     Potion,
     Salad,
     Shield,
+    WeaponLevel,
     Whiskey,
     WipeEnemies,
-    // powerups
-    Attack,
-    AttackSpeed,
-    MovementSpeed,
-    WeaponLevel,
     // weapons
     AngelBlade,
     Book,

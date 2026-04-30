@@ -2210,6 +2210,7 @@ MonoBehaviour:
   gameSetting: {fileID: 11400000, guid: 94cc0cef07544934b978dd2fa41fa064, type: 2}
   canvasGroup: {fileID: 472582294}
   resultText: {fileID: 691272066}
+  rText: {fileID: 1560485912}
   rankText: {fileID: 1013278871}
 --- !u!1 &1836826271
 GameObject:
